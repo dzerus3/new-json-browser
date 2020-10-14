@@ -22,7 +22,8 @@ class Gui(tk.Tk):
         itemButton = tk.Button(
             self.sidebar,
             text="⚒ Items",
-            width = bWidth
+            width = bWidth,
+            command = self.itemScreen
         )
         itemButton.pack(side="top")
 
@@ -73,7 +74,7 @@ class Gui(tk.Tk):
             widget.destroy()
 
     def itemScreen(self):
-        clearFrame(self.mainFrame)
+        self.clearFrame(self.mainFrame)
         itemLabel = tk.Label(self.mainFrame, text="Welcome to the item screen.")
         itemLabel.pack(side="top")
 

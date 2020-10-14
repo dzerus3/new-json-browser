@@ -4,31 +4,31 @@ import os
 import tkinter as tk
 
 class Gui(tk.Tk):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        createMainFrame()
-        createSidebar()
+        self.createMainFrame()
+        self.createSidebar()
         self.mainloop()
 
-    def createSidebar():
+    def createSidebar(self):
         sidebar = tk.Frame(self)
         sidebar.pack(side="left", fill="both")
-        sidebarButtons(sidebar)
+        self.sidebarButtons(sidebar)
 
-    def sidebarButtons(sidebar):
-        itemButton = Button(sidebar, text="⚔ Items")
+    def sidebarButtons(self, sidebar):
+        itemButton = tk.Button(sidebar, text="⚔ Items")
         itemButton.pack(side="left")
 
-    def createMainFrame():
+    def createMainFrame(self):
         mainFrame = tk.Frame(self)
-        sidebar.pack(side="right", fill="both")
-        welcome = tk.label(self, text="Welcome to Dellon's JSON browser!")
+        mainFrame.pack(side="right", fill="both")
+        welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
         welcome.pack()
 
 class JsonLoader():
     def __init__(self):
-        self.jsonDir = readJsonDir()
-        self.loadedJson = loadJson()
+        self.jsonDir = self.readJsonDir()
+        self.loadedJson = self.loadJson()
 
     # Get the Json directory from file; thanks to @rektrex for this function
     def readJsonDir(self):
@@ -46,7 +46,7 @@ class JsonLoader():
                     raise FileNotFoundError
 
         except FileNotFoundError:
-            directory = getJsonDir()
+            directory = self.getJsonDir()
             with open(configfile, 'w') as configFile:
                 configFile.write(directory)
 
@@ -79,3 +79,9 @@ class JsonLoader():
                 result.append(json.load(openedJsonFile))
 
         return result
+
+def main():
+    gui = Gui()
+
+if __name__ == "__main__":
+    main()

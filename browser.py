@@ -1,17 +1,37 @@
 import json
 import glob
 import os
+import tkinter as tk
 
-class JsonLoader:
-    jsonDir = ""
-    loadedJson = []
+class Gui(tk.Tk):
+    def __init__(self):
+        tk.Tk.__init__(self, *args, **kwargs)
+        createMainFrame()
+        createSidebar()
+        self.mainloop()
 
+    def createSidebar():
+        sidebar = tk.Frame(self)
+        sidebar.pack(side="left", fill="both")
+        sidebarButtons(sidebar)
+
+    def sidebarButtons(sidebar):
+        itemButton = Button(sidebar, text="⚔ Items")
+        itemButton.pack(side="left")
+
+    def createMainFrame():
+        mainFrame = tk.Frame(self)
+        sidebar.pack(side="right", fill="both")
+        welcome = tk.label(self, text="Welcome to Dellon's JSON browser!")
+        welcome.pack()
+
+class JsonLoader():
     def __init__(self):
         self.jsonDir = readJsonDir()
         self.loadedJson = loadJson()
 
     # Get the Json directory from file; thanks to @rektrex for this function
-    def readJsonDir():
+    def readJsonDir(self):
         configfile = os.path.join(
                 os.environ.get('APPDATA') or
                 os.environ.get('XDG_CONFIG_HOME') or
@@ -34,7 +54,7 @@ class JsonLoader:
             return directory
 
     # Run when the program is started for the first time, or whenever the JSON dir is not found
-    def getJsonDir():
+    def getJsonDir(self):
         print("Please enter the path to the game's JSON folder.")
         # directory = input() # TODO
 
@@ -46,7 +66,7 @@ class JsonLoader:
         return directory
 
     # Loads game's JSON into memory
-    def loadJson():
+    def loadJson(self):
         result = []
 
         # Gets the name of each JSON file

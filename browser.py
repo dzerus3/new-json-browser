@@ -16,14 +16,62 @@ class Gui(tk.Tk):
         self.sidebarButtons(sidebar)
 
     def sidebarButtons(self, sidebar):
-        itemButton = tk.Button(sidebar, text="⚔ Items")
-        itemButton.pack(side="left")
+        # Default width for all buttons
+        bWidth = 10
+
+        itemButton = tk.Button(
+            sidebar,
+            text="⚒ Items",
+            width = bWidth
+        )
+        itemButton.pack(side="top")
+
+        mutationButton = tk.Button(
+            sidebar,
+            text="☣ Mutations",
+            width = bWidth
+        )
+        mutationButton.pack(side="top")
+
+        bionicButton = tk.Button(
+            sidebar,
+            text="⚙ Bionics",
+            width = bWidth
+        )
+        bionicButton.pack(side="top")
+
+        martialButton = tk.Button(
+            sidebar,
+            text="⚔ Martial Arts",
+            width = bWidth
+        )
+        martialButton.pack(side="top")
+
+        vehicleButton = tk.Button(
+            sidebar,
+            text="⛍ Vehicles",
+            width = bWidth
+        )
+        vehicleButton.pack(side="top")
+
+        monsterButton = tk.Button(
+            sidebar,
+            text="⚰ Monsters",
+            width = bWidth
+        )
+        monsterButton.pack(side="top")
 
     def createMainFrame(self):
         mainFrame = tk.Frame(self)
         mainFrame.pack(side="right", fill="both")
         welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
         welcome.pack()
+
+    # https://stackoverflow.com/a/28623781
+    def clearFrame(self, frame):
+        for widget in frame.winfo_children():
+            widget.destroy()
+
 
 class JsonLoader():
     def __init__(self):

@@ -11,56 +11,8 @@ class Gui(tk.Tk):
         self.mainloop()
 
     def createSidebar(self):
-        self.sidebar = tk.Frame(self)
+        self.sidebar = sidebar(controller=self)
         self.sidebar.pack(side="left", fill="both")
-        self.sidebarButtons()
-
-    def sidebarButtons(self):
-        # Default width for all buttons
-        bWidth = 10
-
-        itemButton = tk.Button(
-            self.sidebar,
-            text="⚒ Items",
-            width = bWidth,
-            command = self.itemScreen
-        )
-        itemButton.pack(side="top")
-
-        mutationButton = tk.Button(
-            self.sidebar,
-            text="☣ Mutations",
-            width = bWidth
-        )
-        mutationButton.pack(side="top")
-
-        bionicButton = tk.Button(
-            self.sidebar,
-            text="⚙ Bionics",
-            width = bWidth
-        )
-        bionicButton.pack(side="top")
-
-        martialButton = tk.Button(
-            self.sidebar,
-            text="⚔ Martial Arts",
-            width = bWidth
-        )
-        martialButton.pack(side="top")
-
-        vehicleButton = tk.Button(
-            self.sidebar,
-            text="⛍ Vehicles",
-            width = bWidth
-        )
-        vehicleButton.pack(side="top")
-
-        monsterButton = tk.Button(
-            self.sidebar,
-            text="⚰ Monsters",
-            width = bWidth
-        )
-        monsterButton.pack(side="top")
 
     def createMainFrame(self):
         self.mainFrame = tk.Frame(self)
@@ -73,11 +25,63 @@ class Gui(tk.Tk):
         for widget in frame.winfo_children():
             widget.destroy()
 
-    def itemScreen(self):
-        self.clearFrame(self.mainFrame)
-        itemLabel = tk.Label(self.mainFrame, text="Welcome to the item screen.")
-        itemLabel.pack(side="top")
+class sidebar(tk.Frame):
+    def __init__(self, controller):
+        tk.Frame.__init__(self)
+        self.controller = controller
+        self.createButtons()
 
+    def createButtons(self):
+        # Default width for all buttons
+        bWidth = 10
+
+        itemButton = tk.Button(
+            self,
+            text="⚒ Items",
+            width = bWidth
+            # command = self.itemScreen
+        )
+        itemButton.pack(side="top")
+
+        mutationButton = tk.Button(
+            self,
+            text="☣ Mutations",
+            width = bWidth
+        )
+        mutationButton.pack(side="top")
+
+        bionicButton = tk.Button(
+            self,
+            text="⚙ Bionics",
+            width = bWidth
+        )
+        bionicButton.pack(side="top")
+
+        martialButton = tk.Button(
+            self,
+            text="⚔ Martial Arts",
+            width = bWidth
+        )
+        martialButton.pack(side="top")
+
+        vehicleButton = tk.Button(
+            self,
+            text="⛍ Vehicles",
+            width = bWidth
+        )
+        vehicleButton.pack(side="top")
+
+        monsterButton = tk.Button(
+            self,
+            text="⚰ Monsters",
+            width = bWidth
+        )
+        monsterButton.pack(side="top")
+
+    # def itemScreen(self):
+    #     self.clearFrame(self.mainFrame)
+    #     itemLabel = tk.Label(self.mainFrame, text="Welcome to the item screen.")
+    #     itemLabel.pack(side="top")
 
 class JsonLoader():
     def __init__(self):

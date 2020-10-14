@@ -11,66 +11,71 @@ class Gui(tk.Tk):
         self.mainloop()
 
     def createSidebar(self):
-        sidebar = tk.Frame(self)
-        sidebar.pack(side="left", fill="both")
-        self.sidebarButtons(sidebar)
+        self.sidebar = tk.Frame(self)
+        self.sidebar.pack(side="left", fill="both")
+        self.sidebarButtons()
 
-    def sidebarButtons(self, sidebar):
+    def sidebarButtons(self):
         # Default width for all buttons
         bWidth = 10
 
         itemButton = tk.Button(
-            sidebar,
+            self.sidebar,
             text="⚒ Items",
             width = bWidth
         )
         itemButton.pack(side="top")
 
         mutationButton = tk.Button(
-            sidebar,
+            self.sidebar,
             text="☣ Mutations",
             width = bWidth
         )
         mutationButton.pack(side="top")
 
         bionicButton = tk.Button(
-            sidebar,
+            self.sidebar,
             text="⚙ Bionics",
             width = bWidth
         )
         bionicButton.pack(side="top")
 
         martialButton = tk.Button(
-            sidebar,
+            self.sidebar,
             text="⚔ Martial Arts",
             width = bWidth
         )
         martialButton.pack(side="top")
 
         vehicleButton = tk.Button(
-            sidebar,
+            self.sidebar,
             text="⛍ Vehicles",
             width = bWidth
         )
         vehicleButton.pack(side="top")
 
         monsterButton = tk.Button(
-            sidebar,
+            self.sidebar,
             text="⚰ Monsters",
             width = bWidth
         )
         monsterButton.pack(side="top")
 
     def createMainFrame(self):
-        mainFrame = tk.Frame(self)
-        mainFrame.pack(side="right", fill="both")
-        welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
+        self.mainFrame = tk.Frame(self)
+        self.mainFrame.pack(side="top", fill="both")
+        welcome = tk.Label(self.mainFrame, text="Welcome to Dellon's JSON browser!")
         welcome.pack()
 
     # https://stackoverflow.com/a/28623781
     def clearFrame(self, frame):
         for widget in frame.winfo_children():
             widget.destroy()
+
+    def itemScreen(self):
+        clearFrame(self.mainFrame)
+        itemLabel = tk.Label(self.mainFrame, text="Welcome to the item screen.")
+        itemLabel.pack(side="top")
 
 
 class JsonLoader():

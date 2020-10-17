@@ -5,7 +5,14 @@ import tkinter as tk
 
 class Gui(tk.Tk):
     def __init__(self, *args, **kwargs):
+        self.loadedJson = JsonLoader()
         tk.Tk.__init__(self, *args, **kwargs)
+
+        self.container = tk.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True)
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
+
         self.createMainFrame()
         self.createSidebar()
         self.mainloop()
@@ -15,10 +22,23 @@ class Gui(tk.Tk):
         self.sidebar.pack(side="left", fill="both")
 
     def createMainFrame(self):
-        self.mainFrame = tk.Frame(self)
-        self.mainFrame.pack(side="top", fill="both")
-        welcome = tk.Label(self.mainFrame, text="Welcome to Dellon's JSON browser!")
-        welcome.pack()
+        self.frames = {}
+        for Frame in (MainFrame, ItemFrame, MutationFrame):
+            frameName = Frame.__name__
+            frameInstance = Frame(
+                parent=self.container, json=self.loadedJson.items)
+            self.frames[frameName] = frameInstance
+
+            # put all of the pages in the same location;
+            # the one on the top of the stacking order
+            # will be the one that is visible.
+            frameInstance.grid(row=0, column=0, sticky="nsew")
+
+        self.showFrame("MainFrame")
+
+    def showFrame(self, frameName):
+        frame = self.frames[frameName]
+        frame.tkraise()
 
     # https://stackoverflow.com/a/28623781
     def clearFrame(self, frame):
@@ -38,15 +58,16 @@ class Sidebar(tk.Frame):
         itemButton = tk.Button(
             self,
             text="⚒ Items",
-            width = bWidth
-            # command = self.itemScreen
+            width = bWidth,
+            command = lambda: self.controller.showFrame("ItemFrame")
         )
         itemButton.pack(side="top")
 
         mutationButton = tk.Button(
             self,
             text="☣ Mutations",
-            width = bWidth
+            width = bWidth,
+            command = lambda: self.controller.showFrame("MutationFrame")
         )
         mutationButton.pack(side="top")
 
@@ -80,15 +101,50 @@ class Sidebar(tk.Frame):
 
     # def itemScreen(self):
     #     self.clearFrame(self.mainFrame)
-    #     itemLabel = tk.Label(self.mainFrame, text="Welcome to the item screen.")
-    #     itemLabel.pack(side="top")
+
+class MainFrame(tk.Frame):
+    def __init__(self, parent, json):
+        tk.Frame.__init__(self, parent)
+        welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
+        welcome.pack()
+
+class ItemFrame(tk.Frame):
+    def __init__(self, parent, json):
+        tk.Frame.__init__(self, parent)
+        self.json = json
+
+        itemLabel = tk.Label(self, text="Welcome to the item screen.")
+        itemLabel.pack(side="top")
+
+        self.searchField = tk.Entry(self)
+        self.searchField.pack()
+
+        self.resultLabel = tk.Message(self, text="")
+        self.resultLabel.pack()
+
+        searchButton = tk.Button(
+            self,
+            text="Search",
+            command=self.searchItem
+        )
+        searchButton.pack()
+
+    def searchItem(self):
+        search = self.searchField.get()
+        item = self.json.get(search)
+        self.resultLabel["text"] = str(item)
+
+class MutationFrame(tk.Frame):
+    def __init__(self, parent, json):
+        tk.Frame.__init__(self, parent)
+        mutationLabel = tk.Label(self, text="Welcome to the mutation screen.")
+        mutationLabel.pack(side="top")
 
 class JsonLoader():
     def __init__(self):
         self.jsonDir = self.readJsonDir()
         self.jsonFiles = self.getJsonFiles()
         self.loadedJson = self.loadJson()
-        print(self.items[0])
 
     # Get the Json directory from file; thanks to @rektrex for this function
     def readJsonDir(self):
@@ -172,7 +228,6 @@ class JsonLoader():
                         if obj["type"] in itemTypes:
                             name = self.getItemName(obj["name"])
                             self.items[name] = obj
-        print(self.items["atomic lamp"])
 
     def getItemName(self, name):
         # Checks whether the name is a legacy name
@@ -185,7 +240,6 @@ class JsonLoader():
             return "NONE"
 
 def main():
-    loadedJson = JsonLoader()
     gui = Gui()
 
 if __name__ == "__main__":

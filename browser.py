@@ -156,7 +156,7 @@ class JsonLoader():
             "TOOL" # Tools and bombs
         ]
 
-        self.items = []
+        self.items = {}
 
         for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
@@ -170,7 +170,19 @@ class JsonLoader():
                 else:
                     for obj in jsonContent:
                         if obj["type"] in itemTypes:
-                            self.items.append(obj)
+                            name = self.getItemName(obj["name"])
+                            self.items[name] = obj
+        print(self.items["atomic lamp"])
+
+    def getItemName(self, name):
+        # Checks whether the name is a legacy name
+        # lowercases name so search is not case sensitive
+        if isinstance(name, str):
+            return name.lower()
+        elif isinstance(name, dict):
+            return name.get("str").lower()
+        else:
+            return "NONE"
 
 def main():
     loadedJson = JsonLoader()

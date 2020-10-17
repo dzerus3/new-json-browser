@@ -11,7 +11,7 @@ class Gui(tk.Tk):
         self.mainloop()
 
     def createSidebar(self):
-        self.sidebar = sidebar(controller=self)
+        self.sidebar = Sidebar(controller=self)
         self.sidebar.pack(side="left", fill="both")
 
     def createMainFrame(self):
@@ -25,7 +25,7 @@ class Gui(tk.Tk):
         for widget in frame.winfo_children():
             widget.destroy()
 
-class sidebar(tk.Frame):
+class Sidebar(tk.Frame):
     def __init__(self, controller):
         tk.Frame.__init__(self)
         self.controller = controller
@@ -86,7 +86,9 @@ class sidebar(tk.Frame):
 class JsonLoader():
     def __init__(self):
         self.jsonDir = self.readJsonDir()
+        self.jsonFiles = self.getJsonFiles()
         self.loadedJson = self.loadJson()
+        print(self.items[0])
 
     # Get the Json directory from file; thanks to @rektrex for this function
     def readJsonDir(self):
@@ -114,7 +116,7 @@ class JsonLoader():
     # Run when the program is started for the first time, or whenever the JSON dir is not found
     def getJsonDir(self):
         print("Please enter the path to the game's JSON folder.")
-        # directory = input() # TODO
+        directory = input() # TODO
 
         # Recursive call to itself until a valid location is specified
         if not os.path.isdir(directory):
@@ -124,21 +126,54 @@ class JsonLoader():
         return directory
 
     # Loads game's JSON into memory
-    def loadJson(self):
-        result = []
+    def getJsonFiles(self):
+        print(f"Retrieving a list of JSON files from {self.jsonDir}...")
 
         # Gets the name of each JSON file
-        # I'm not sure whether os.path.join() is the best idea here since it's not an actual directory, but it should work
-        jsonFiles = glob.glob(os.path.join(self.jsonDir, "/**/*.json", recursive=True))
+        # os.path.join does *not* work here
+        jsonFiles = []
+        wildcard = self.jsonDir + "/**/*.json"
 
-        # Loops through every file name and loads it into a list
-        for jsonFile in jsonFiles:
+        for jsonFile in glob.iglob(wildcard, recursive=True):
+            jsonFiles.append(jsonFile)
+
+        return jsonFiles
+
+    def loadJson(self):
+        print("Loading items from JSON...")
+        itemTypes = [
+            "AMMO", # Ammunition for guns
+            "ARMOR", # Wearable clothing
+            "BATTERY", # Batteries
+            "BIONIC_ITEM", # Bionic modules
+            "BOOK", # Readable book
+            "COMESTIBLE", # Food
+            "GENERIC", # Random things
+            "GUN", # Firearms
+            "GUNMOD", # Gun modifications
+            "MAGAZINE", # Magazines for guns
+            "PET_ARMOR", # Armor wearable by pets
+            "TOOL" # Tools and bombs
+        ]
+
+        self.items = []
+
+        for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
-                result.append(json.load(openedJsonFile))
+                jsonContent = json.load(openedJsonFile)
+                objType = ""
 
-        return result
+                # Although most files are arrays of objects, some are just
+                # one object. This needs to be handled.
+                if isinstance(jsonContent, dict):
+                    objType = jsonContent.get("type")
+                else:
+                    for obj in jsonContent:
+                        if obj["type"] in itemTypes:
+                            self.items.append(obj)
 
 def main():
+    loadedJson = JsonLoader()
     gui = Gui()
 
 if __name__ == "__main__":

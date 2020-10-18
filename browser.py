@@ -117,37 +117,13 @@ class LookupFrame(tk.Frame):
         # Default width for all buttons
         bWidth = 10
 
-        itemButton = tk.Button(
+        monsterButton = tk.Button(
             self,
-            text="⚒ Items",
+            text="⚰ Monsters",
             width = bWidth,
-            command = lambda: self.changeCurrentLookup("item")
+            command = lambda: self.changeCurrentLookup("monster")
         )
-        itemButton.pack(side="bottom")
-
-        mutationButton = tk.Button(
-            self,
-            text="☣ Mutations",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("mutation")
-        )
-        mutationButton.pack(side="bottom")
-
-        bionicButton = tk.Button(
-            self,
-            text="⚙ Bionics",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("bionic")
-        )
-        bionicButton.pack(side="bottom")
-
-        martialButton = tk.Button(
-            self,
-            text="⚔ Martial Arts",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("martial_art")
-        )
-        martialButton.pack(side="bottom")
+        monsterButton.pack(side="bottom")
 
         vehicleButton = tk.Button(
             self,
@@ -157,13 +133,37 @@ class LookupFrame(tk.Frame):
         )
         vehicleButton.pack(side="bottom")
 
-        monsterButton = tk.Button(
+        martialButton = tk.Button(
             self,
-            text="⚰ Monsters",
+            text="⚔ Martial Arts",
             width = bWidth,
-            command = lambda: self.changeCurrentLookup("monster")
+            command = lambda: self.changeCurrentLookup("martial_art")
         )
-        monsterButton.pack(side="bottom")
+        martialButton.pack(side="bottom")
+
+        bionicButton = tk.Button(
+            self,
+            text="⚙ Bionics",
+            width = bWidth,
+            command = lambda: self.changeCurrentLookup("bionic")
+        )
+        bionicButton.pack(side="bottom")
+
+        mutationButton = tk.Button(
+            self,
+            text="☣ Mutations",
+            width = bWidth,
+            command = lambda: self.changeCurrentLookup("mutation")
+        )
+        mutationButton.pack(side="bottom")
+
+        itemButton = tk.Button(
+            self,
+            text="⚒ Items",
+            width = bWidth,
+            command = lambda: self.changeCurrentLookup("item")
+        )
+        itemButton.pack(side="bottom")
 
 class JsonLoader():
     def __init__(self):

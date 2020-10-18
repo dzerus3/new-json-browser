@@ -108,8 +108,10 @@ class LookupFrame(tk.Frame):
 
     def changeCurrentLookup(self, lookupType):
         self.currentLookup = lookupType
-        # self.label["text"] = f"Welcome to the {lookupType} screen."
-        # self.resultLabel["text"] = ""
+        self.label["text"] = f"Welcome to the {lookupType} screen."
+        # Also clears the screen, makes for better UX
+        self.resultLabel["text"] = ""
+        self.searchField.delete(0, 'end')
 
     def createButtons(self):
         # Default width for all buttons

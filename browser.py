@@ -94,14 +94,11 @@ class LookupFrame(tk.Frame):
         self.searchField.pack()
 
         # Where the result will pop up
-        self.resultLabel = tk.Message(self, text="")
-        self.resultLabel.pack()
+        self.resultField = tk.Text(self, height=20, width=50)
+        self.resultField.configure(state="disabled")
+        self.resultField.pack()
 
-        searchButton = tk.Button(
-            self,
-            text="Search",
-            command=self.searchItem
-        )
+        searchButton = tk.Button(self, text="Search", command=self.searchItem)
         searchButton.pack()
 
         self.createButtons()
@@ -113,13 +110,19 @@ class LookupFrame(tk.Frame):
         # currentLookup type
         item = self.json[self.currentLookup].get(search)
         # Prints out the result
-        self.resultLabel["text"] = str(item)
+        self.addResult(item)
+
+    def addResult(self, message):
+        self.resultField.configure(state="normal")
+        self.resultField.delete("1.0", "end")
+        self.resultField.insert(tk.END, str(message))
+        self.resultField.configure(state="disabled")
 
     def changeCurrentLookup(self, lookupType):
         self.currentLookup = lookupType
         self.label["text"] = f"Welcome to the {lookupType} screen."
         # Also clears the screen, makes for better UX
-        self.resultLabel["text"] = ""
+        self.addResult("")
         self.searchField.delete(0, 'end')
 
     def createButtons(self):

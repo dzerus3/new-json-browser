@@ -5,6 +5,7 @@ import tkinter as tk
 
 class Gui(tk.Tk):
     def __init__(self, *args, **kwargs):
+        self.currentLookup = "item"
         self.loadedJson = JsonLoader()
         tk.Tk.__init__(self, *args, **kwargs)
 
@@ -23,10 +24,9 @@ class Gui(tk.Tk):
 
     def createMainFrame(self):
         self.frames = {}
-        for Frame in (MainFrame, ItemFrame, MutationFrame, BionicFrame, MartialFrame, VehicleFrame, MonsterFrame):
+        for Frame in (MainFrame, LookupFrame):
             frameName = Frame.__name__
-            frameInstance = Frame(
-                parent=self.container, json=self.loadedJson.items)
+            frameInstance = Frame(parent=self.container, controller=self)
             self.frames[frameName] = frameInstance
 
             # put all of the pages in the same location;
@@ -57,9 +57,9 @@ class Sidebar(tk.Frame):
 
         itemButton = tk.Button(
             self,
-            text="⚒ Items",
+            text="Lookup",
             width = bWidth,
-            command = lambda: self.controller.showFrame("ItemFrame")
+            command = lambda: self.controller.showFrame("LookupFrame")
         )
         itemButton.pack(side="top")
 
@@ -67,206 +67,101 @@ class Sidebar(tk.Frame):
             self,
             text="☣ Mutations",
             width = bWidth,
-            command = lambda: self.controller.showFrame("MutationFrame")
         )
         mutationButton.pack(side="top")
+
+class MainFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
+        welcome.pack()
+
+class LookupFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.currentLookup = "item"
+        self.json = controller.loadedJson.items
+
+        self.label = tk.Label(self, text=f"Welcome to the {self.currentLookup} screen.")
+        self.label.pack(side="top")
+
+        self.searchField = tk.Entry(self)
+
+        self.searchField.pack()
+
+        self.resultLabel = tk.Message(self, text="")
+        self.resultLabel.pack()
+
+        searchButton = tk.Button(
+            self,
+            text="Search",
+            command=self.searchItem
+        )
+        searchButton.pack()
+
+        self.createButtons()
+
+    def searchItem(self):
+        search = self.searchField.get().lower()
+        item = self.json[self.currentLookup].get(search)
+        self.resultLabel["text"] = str(item)
+
+    def changeCurrentLookup(self, lookupType):
+        self.currentLookup = lookupType
+        # self.label["text"] = f"Welcome to the {lookupType} screen."
+        # self.resultLabel["text"] = ""
+
+    def createButtons(self):
+        # Default width for all buttons
+        bWidth = 10
+
+        itemButton = tk.Button(
+            self,
+            text="⚒ Items",
+            width = bWidth,
+            command = lambda: self.changeCurrentLookup("item")
+        )
+        itemButton.pack(side="bottom")
+
+        mutationButton = tk.Button(
+            self,
+            text="☣ Mutations",
+            width = bWidth,
+            command = lambda: self.changeCurrentLookup("mutation")
+        )
+        mutationButton.pack(side="bottom")
 
         bionicButton = tk.Button(
             self,
             text="⚙ Bionics",
             width = bWidth,
-            command = lambda: self.controller.showFrame("BionicFrame")
+            command = lambda: self.changeCurrentLookup("bionic")
         )
-        bionicButton.pack(side="top")
+        bionicButton.pack(side="bottom")
 
         martialButton = tk.Button(
             self,
             text="⚔ Martial Arts",
             width = bWidth,
-            command = lambda: self.controller.showFrame("MartialFrame")
+            command = lambda: self.changeCurrentLookup("martial_art")
         )
-        martialButton.pack(side="top")
+        martialButton.pack(side="bottom")
 
         vehicleButton = tk.Button(
             self,
             text="⛍ Vehicles",
             width = bWidth,
-            command = lambda: self.controller.showFrame("VehicleFrame")
+            command = lambda: self.changeCurrentLookup("vehicle")
         )
-        vehicleButton.pack(side="top")
+        vehicleButton.pack(side="bottom")
 
         monsterButton = tk.Button(
             self,
             text="⚰ Monsters",
             width = bWidth,
-            command = lambda: self.controller.showFrame("MonsterFrame")
+            command = lambda: self.changeCurrentLookup("monster")
         )
-        monsterButton.pack(side="top")
-
-    # def itemScreen(self):
-    #     self.clearFrame(self.mainFrame)
-
-class MainFrame(tk.Frame):
-    def __init__(self, parent, json):
-        tk.Frame.__init__(self, parent)
-        welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
-        welcome.pack()
-
-class ItemFrame(tk.Frame):
-    def __init__(self, parent, json):
-        tk.Frame.__init__(self, parent)
-        self.json = json
-
-        itemLabel = tk.Label(self, text="Welcome to the item screen.")
-        itemLabel.pack(side="top")
-
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
-
-        self.resultLabel = tk.Message(self, text="")
-        self.resultLabel.pack()
-
-        searchButton = tk.Button(
-            self,
-            text="Search",
-            command=self.searchItem
-        )
-        searchButton.pack()
-
-    def searchItem(self):
-        search = self.searchField.get().lower()
-        item = self.json["item"].get(search)
-        self.resultLabel["text"] = str(item)
-
-class MutationFrame(tk.Frame):
-    def __init__(self, parent, json):
-        tk.Frame.__init__(self, parent)
-        self.json = json
-
-        itemLabel = tk.Label(self, text="Welcome to the mutation screen.")
-        itemLabel.pack(side="top")
-
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
-
-        self.resultLabel = tk.Message(self, text="")
-        self.resultLabel.pack()
-
-        searchButton = tk.Button(
-            self,
-            text="Search",
-            command=self.searchItem
-        )
-        searchButton.pack()
-
-    def searchItem(self):
-        search = self.searchField.get().lower()
-        item = self.json["mutation"].get(search)
-        self.resultLabel["text"] = str(item)
-
-class BionicFrame(tk.Frame): # TODO
-    def __init__(self, parent, json):
-        tk.Frame.__init__(self, parent)
-        self.json = json
-
-        itemLabel = tk.Label(self, text="Welcome to the bionic screen.")
-        itemLabel.pack(side="top")
-
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
-
-        self.resultLabel = tk.Message(self, text="")
-        self.resultLabel.pack()
-
-        searchButton = tk.Button(
-            self,
-            text="Search",
-            command=self.searchItem
-        )
-        searchButton.pack()
-
-    def searchItem(self):
-        search = self.searchField.get().lower()
-        item = self.json["bionic"].get(search)
-        self.resultLabel["text"] = str(item)
-
-class MartialFrame(tk.Frame):
-    def __init__(self, parent, json):
-        tk.Frame.__init__(self, parent)
-        self.json = json
-
-        itemLabel = tk.Label(self, text="Welcome to the martial art screen.")
-        itemLabel.pack(side="top")
-
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
-
-        self.resultLabel = tk.Message(self, text="")
-        self.resultLabel.pack()
-
-        searchButton = tk.Button(
-            self,
-            text="Search",
-            command=self.searchItem
-        )
-        searchButton.pack()
-
-    def searchItem(self):
-        search = self.searchField.get().lower()
-        item = self.json["martial_art"].get(search)
-        self.resultLabel["text"] = str(item)
-
-class VehicleFrame(tk.Frame):
-    def __init__(self, parent, json):
-        tk.Frame.__init__(self, parent)
-        self.json = json
-
-        itemLabel = tk.Label(self, text="Welcome to the vehicle screen.")
-        itemLabel.pack(side="top")
-
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
-
-        self.resultLabel = tk.Message(self, text="")
-        self.resultLabel.pack()
-
-        searchButton = tk.Button(
-            self,
-            text="Search",
-            command=self.searchItem
-        )
-        searchButton.pack()
-
-    def searchItem(self):
-        search = self.searchField.get().lower()
-        item = self.json["vehicle"].get(search)
-        self.resultLabel["text"] = str(item)
-
-class MonsterFrame(tk.Frame):
-    def __init__(self, parent, json):
-        tk.Frame.__init__(self, parent)
-        self.json = json
-
-        itemLabel = tk.Label(self, text="Welcome to the monster screen.")
-        itemLabel.pack(side="top")
-
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
-
-        self.resultLabel = tk.Message(self, text="")
-        self.resultLabel.pack()
-
-        searchButton = tk.Button(
-            self,
-            text="Search",
-            command=self.searchItem
-        )
-        searchButton.pack()
-
-    def searchItem(self):
-        search = self.searchField.get().lower()
-        item = self.json["monster"].get(search)
-        self.resultLabel["text"] = str(item)
+        monsterButton.pack(side="bottom")
 
 class JsonLoader():
     def __init__(self):

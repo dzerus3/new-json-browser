@@ -9,6 +9,7 @@ class Gui(tk.Tk):
         self.loadedJson = JsonLoader()
         tk.Tk.__init__(self, *args, **kwargs)
 
+        # A big container for the main frame
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
@@ -36,6 +37,7 @@ class Gui(tk.Tk):
 
         self.showFrame("MainFrame")
 
+    # Moves specified frame to the top, making it replace current one
     def showFrame(self, frameName):
         frame = self.frames[frameName]
         frame.tkraise()
@@ -79,16 +81,19 @@ class MainFrame(tk.Frame):
 class LookupFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+
+        # The JSON type program will search for
         self.currentLookup = "item"
+        # The contents of the program's JSON
         self.json = controller.loadedJson.items
 
         self.label = tk.Label(self, text=f"Welcome to the {self.currentLookup} screen.")
         self.label.pack(side="top")
 
         self.searchField = tk.Entry(self)
-
         self.searchField.pack()
 
+        # Where the result will pop up
         self.resultLabel = tk.Message(self, text="")
         self.resultLabel.pack()
 
@@ -102,8 +107,12 @@ class LookupFrame(tk.Frame):
         self.createButtons()
 
     def searchItem(self):
+        # Retrieves content of entry field
         search = self.searchField.get().lower()
+        # Gets the item with the name `search` from the JSON of
+        # currentLookup type
         item = self.json[self.currentLookup].get(search)
+        # Prints out the result
         self.resultLabel["text"] = str(item)
 
     def changeCurrentLookup(self, lookupType):

@@ -130,8 +130,8 @@ class ItemFrame(tk.Frame):
         searchButton.pack()
 
     def searchItem(self):
-        search = self.searchField.get()
-        item = self.json.get(search)
+        search = self.searchField.get().lower()
+        item = self.json["item"].get(search)
         self.resultLabel["text"] = str(item)
 
 class MutationFrame(tk.Frame):
@@ -197,22 +197,15 @@ class JsonLoader():
 
     def loadJson(self):
         print("Loading items from JSON...")
-        itemTypes = [
-            "AMMO", # Ammunition for guns
-            "ARMOR", # Wearable clothing
-            "BATTERY", # Batteries
-            "BIONIC_ITEM", # Bionic modules
-            "BOOK", # Readable book
-            "COMESTIBLE", # Food
-            "GENERIC", # Random things
-            "GUN", # Firearms
-            "GUNMOD", # Gun modifications
-            "MAGAZINE", # Magazines for guns
-            "PET_ARMOR", # Armor wearable by pets
-            "TOOL" # Tools and bombs
-        ]
 
-        self.items = {}
+        self.items = {
+            "item":{},
+            "mutation":{},
+            "bionic":{},
+            "martial_art":{},
+            "vehicle":{},
+            "monster":{}
+        }
 
         for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
@@ -222,12 +215,45 @@ class JsonLoader():
                 # Although most files are arrays of objects, some are just
                 # one object. This needs to be handled.
                 if isinstance(jsonContent, dict):
-                    objType = jsonContent.get("type")
+                    self.handleObjectJson(jsonContent)
                 else:
                     for obj in jsonContent:
-                        if obj["type"] in itemTypes:
-                            name = self.getItemName(obj["name"])
-                            self.items[name] = obj
+                        self.handleObjectJson(obj)
+
+    def handleObjectJson(self, obj):
+        objType = self.resolveType(obj["type"])
+        if objType:
+            name = self.getItemName(obj.get("name"))
+            self.items[objType][name] = obj
+
+    def resolveType(self, jsonType):
+        types = {
+            "item": [
+                "AMMO", # Ammunition for guns
+                "ARMOR", # Wearable clothing
+                "BATTERY", # Batteries
+                "BIONIC_ITEM", # Bionic modules
+                "BOOK", # Readable book
+                "COMESTIBLE", # Food
+                "GENERIC", # Random things
+                "GUN", # Firearms
+                "GUNMOD", # Gun modifications
+                "MAGAZINE", # Magazines for guns
+                "PET_ARMOR", # Armor wearable by pets
+                "TOOL" # Tools and bombs
+            ],
+            "mutation": ["mutation"],
+            "bionic": ["bionic"],
+            "martial_art": ["martial_art"],
+            "vehicle": ["vehicle_part"],
+            "monster": ["MONSTER"]
+        }
+
+        for objectType in types:
+            if jsonType in types[objectType]:
+                return objectType
+
+        return None
 
     def getItemName(self, name):
         # Checks whether the name is a legacy name

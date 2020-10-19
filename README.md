@@ -26,6 +26,7 @@ Ideally, this project aims to replicate all the features currently in the item b
 - Advanced info on martial arts bonuses
 - Item crafting and deconstruction info
 - Hotkeys
+- Mod support
 
 ## What might be planned?
 - Clickable links (I don't know how I'll implement that yet)

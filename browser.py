@@ -87,6 +87,8 @@ class LookupFrame(tk.Frame):
         # The contents of the program's JSON
         self.json = controller.loadedJson.items
 
+        self.translator = JsonTranslator()
+
         self.label = tk.Label(self, text=f"Welcome to the {self.currentLookup} screen.")
         self.label.pack(side="top")
 
@@ -115,7 +117,7 @@ class LookupFrame(tk.Frame):
 
     def addResult(self, message):
         self.resultField.configure(state="normal")
-        self.resultField.insert(tk.END, str(message))
+        self.resultField.insert(tk.END, str(message) + "\n")
         self.resultField.configure(state="disabled")
 
     def clearResultField(self):
@@ -123,36 +125,18 @@ class LookupFrame(tk.Frame):
         self.resultField.delete("1.0", "end")
         self.resultField.configure(state="disabled")
 
-    # Outputs JSON attributes to output, ignoring unwanted values
-    def outputJson(self, item):
-        unwantedValues = {
-            "all":  ["id", "type", "//", "//2"],
-            "item": ["color", "use_action", "category", "subcategory",
-                     "id_suffix", "result"],
-            "mutation":  ["starting_trait", "valid"],
-            "bionic"  :  ["flags", "fake_item", "time"],
-            "martial_art":["initiate", "static_buffs", "onmiss_buffs",
-                          "onmove_buffs", "ondodge_buffs", "onhit_buffs",
-                          "oncrit_buffs", "onblock_buffs"],
-            "material":  ["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
-                          "ident"], #TODO
-            "vehicle": ["item", "location", "requirements", "size"],
-            "monster":   ["harvest", "revert_to_itype", "vision_day",
-                          "color", "weight", "default_faction"]
-        }
-
-        for attribute in item:
-            if attribute in unwantedValues[self.currentLookup] or attribute in unwantedValues["all"]:
-                continue
-            else:
-                self.addResult(attribute + ": " + str(item[attribute]) + "\n")
-
     def changeCurrentLookup(self, lookupType):
         self.currentLookup = lookupType
         self.label["text"] = f"Welcome to the {lookupType} screen."
         # Also clears the screen, makes for better UX
         self.clearResultField()
         self.searchField.delete(0, 'end')
+
+    def outputJson(self, rawJson):
+        self.clearResultField()
+        rawJson = self.translator.translate(rawJson)
+        for attribute in rawJson:
+            self.addResult(attribute + ": " + str(rawJson[attribute]))
 
     def createButtons(self):
         # Default width for all buttons
@@ -207,15 +191,19 @@ class LookupFrame(tk.Frame):
         itemButton.pack(side="bottom")
 
 class JsonTranslator():
-    def __init__():
-        self.translationFile = open("translation.json", "r")
+    def __init__(self):
+        translationFile = open("translation.json", "r")
+        self.translations = json.load(translationFile)
 
-    def translate(self, json):
-        jsonType = json["type"]
-        json = self.filterJson(json, jsonType)
-        self.translateJson(json, jsonType)
+    def translate(self, rawJson):
+        jsonType = rawJson["type"]
+        rawJson = self.filterJson(rawJson, jsonType)
+        self.translateJson(rawJson, jsonType)
 
-    def filterJson(self, json, jsonType)
+        return rawJson
+        #TODO add special case for martial arts bonuses.
+
+    def filterJson(self, rawJson, jsonType):
         unwantedValues = {
             "all":  ["id", "type", "//", "//2"],
             "item": ["color", "use_action", "category", "subcategory",
@@ -232,27 +220,28 @@ class JsonTranslator():
                           "color", "weight", "default_faction"]
         }
 
-        for attribute in item:
-            if attribute in unwantedValues[jsonType] or attribute in unwantedValues["all"]:
-                json.pop(attribute)
-            else:
-                continue
-        return json
+        resultJson = {}
 
-    def translateJson(self, json, jsonType):
-        translations = json.load(self.translationFile)
-        typeTranslations = translations[jsonType]
-        for attribute in json:
+        for attribute in rawJson:
+            if attribute in unwantedValues[jsonType] or attribute in unwantedValues["all"]:
+                continue
+            else:
+                resultJson[attribute] = rawJson[attribute]
+        return resultJson
+
+    def translateJson(self, rawJson, jsonType):
+        typeTranslations = self.translations[jsonType]
+        for attribute in rawJson:
             translation = typeTranslations.get(attribute)
 
             #TODO add support for legacy names
             # Names are special because they are an object
             if attribute == "name":
-                json["name"] == json["name"].get("str")
+                rawJson["name"] == rawJson["name"].get("str")
 
             elif translation:
-                json[translation] = json[attribute]
-                json.pop(attribute)
+                rawJson[translation] = rawJson[attribute]
+                rawJson.pop(attribute)
 
 class JsonLoader():
     def __init__(self):

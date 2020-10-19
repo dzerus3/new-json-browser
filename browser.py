@@ -109,20 +109,49 @@ class LookupFrame(tk.Frame):
         # Gets the item with the name `search` from the JSON of
         # currentLookup type
         item = self.json[self.currentLookup].get(search)
+        self.clearResultField()
         # Prints out the result
-        self.addResult(item)
+        self.outputJson(item)
 
     def addResult(self, message):
         self.resultField.configure(state="normal")
-        self.resultField.delete("1.0", "end")
         self.resultField.insert(tk.END, str(message))
         self.resultField.configure(state="disabled")
+
+    def clearResultField(self):
+        self.resultField.configure(state="normal")
+        self.resultField.delete("1.0", "end")
+        self.resultField.configure(state="disabled")
+
+    # Outputs JSON attributes to output, ignoring unwanted values
+    def outputJson(self, item):
+        unwantedValues = {
+            "all":  ["id", "type", "//", "//2"],
+            "item": ["color", "use_action", "category", "subcategory",
+                     "id_suffix", "result"],
+            "mutation":  ["starting_trait", "valid"],
+            "bionic"  :  ["flags", "fake_item", "time"],
+            "martial_art":["initiate", "static_buffs", "onmiss_buffs",
+                          "onmove_buffs", "ondodge_buffs", "onhit_buffs",
+                          "oncrit_buffs", "onblock_buffs"],
+            "material":  ["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
+                          "ident"], #TODO
+            "vehicle": ["item", "location", "requirements", "size"],
+            "monster":   ["harvest", "revert_to_itype", "vision_day",
+                          "color", "weight", "default_faction"]
+        }
+
+        for attribute in item:
+            if attribute in unwantedValues[self.currentLookup] or attribute in unwantedValues["all"]:
+                continue
+            else:
+                self.addResult(attribute + ": " + str(item[attribute]) + "\n")
 
     def changeCurrentLookup(self, lookupType):
         self.currentLookup = lookupType
         self.label["text"] = f"Welcome to the {lookupType} screen."
         # Also clears the screen, makes for better UX
-        self.addResult("")
+        self.clearResultField()
         self.searchField.delete(0, 'end')
 
     def createButtons(self):

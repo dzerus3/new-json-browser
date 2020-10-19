@@ -1,4 +1,5 @@
 import json
+import re
 import glob
 import os
 import tkinter as tk
@@ -78,14 +79,14 @@ class MainFrame(tk.Frame):
         welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
         welcome.pack()
 
-class LookupFrame(tk.Frame):
+class LookupFrame(tk.Frame): #TODO separate searching into separate class
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
         # The JSON type program will search for
         self.currentLookup = "item"
         # The contents of the program's JSON
-        self.json = controller.loadedJson.items
+        self.rawJson = controller.loadedJson.items
 
         self.translator = JsonTranslator()
 
@@ -108,14 +109,21 @@ class LookupFrame(tk.Frame):
     def searchItem(self):
         # Retrieves content of entry field
         search = self.searchField.get().lower()
-        # Gets the item with the name `search` from the JSON of
-        # currentLookup type
-        item = self.json[self.currentLookup].get(search)
-        self.clearResultField()
-        # Prints out the result
-        self.outputJson(item)
+        if ":" in search:
+            results = self.searchByAttribute(self.currentLookup, search)
+            self.clearResultField()
+            for result in results:
+                self.addResult(result)
+        else:
+            # Gets the item with the name `search` from the JSON of
+            # currentLookup type
+            item = self.rawJson[self.currentLookup].get(search)
+            self.clearResultField()
+            # Prints out the result
+            self.outputJson(item)
 
     def addResult(self, message):
+        # Disabling/enabling field is done to prevent typing in Text box
         self.resultField.configure(state="normal")
         self.resultField.insert(tk.END, str(message) + "\n")
         self.resultField.configure(state="disabled")
@@ -132,9 +140,44 @@ class LookupFrame(tk.Frame):
         self.clearResultField()
         self.searchField.delete(0, 'end')
 
+    def searchByAttribute(self, lookupType, string):
+        results = []
+        attributes = self.getAttributesFromString(string)
+        typeJson = self.rawJson[self.currentLookup]
+
+        # Loops through all entries of selected type
+        for entryName in typeJson:
+            entry = typeJson[entryName]
+            # Checks if entry contains all specified attributes
+            result =  all(elem in entry for elem in attributes)
+            isGood = False #TODO: There's gotta be a better way than a variable flag
+            if result:
+                # Checks if every specified attribute is equal to specified value
+                for attribute in attributes:
+                    if attributes[attribute] == entry[attribute]:
+                        # print(entryName + " has " + attribute + " " + attributes[attribute])
+                        isGood = True
+                        continue
+                    else:
+                        isGood = False
+                        break
+            if isGood:
+                print(entryName + " is being appended to results")
+                results.append(entryName)
+        return results
+
+    def getAttributesFromString(self, string):
+        attributes = {}
+        pattern = re.compile(r"\w*:\w*") #TODO make it not prevent multi-word attributes (ie. weight is "100 g", which this regex will turn into "weight":"100")
+        matches = pattern.findall(string)
+        for match in matches:
+            attributes[match.split(":")[0]] = match.split(":")[1]
+
+        return attributes
+
     def outputJson(self, rawJson):
         self.clearResultField()
-        rawJson = self.translator.translate(rawJson)
+        rawJson = self.translator.translate(rawJson, self.currentLookup)
         for attribute in rawJson:
             self.addResult(attribute + ": " + str(rawJson[attribute]))
 
@@ -195,8 +238,7 @@ class JsonTranslator():
         translationFile = open("translation.json", "r")
         self.translations = json.load(translationFile)
 
-    def translate(self, rawJson):
-        jsonType = rawJson["type"]
+    def translate(self, rawJson, jsonType):
         rawJson = self.filterJson(rawJson, jsonType)
         self.translateJson(rawJson, jsonType)
 
@@ -205,7 +247,7 @@ class JsonTranslator():
 
     def filterJson(self, rawJson, jsonType):
         unwantedValues = {
-            "all":  ["id", "type", "//", "//2"],
+            "all":  ["type", "//", "//2", "copy-from"], #id is also candidate
             "item": ["color", "use_action", "category", "subcategory",
                      "id_suffix", "result"],
             "mutation":  ["valid"],
@@ -214,7 +256,7 @@ class JsonTranslator():
                           "onmove_buffs", "ondodge_buffs", "onhit_buffs",
                           "oncrit_buffs", "onblock_buffs"],
             "material":  ["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
-                          "ident"], #TODO
+                          "ident"], #TODO add material search
             "vehicle": ["item", "location", "requirements", "size"],
             "monster":   ["harvest", "revert_to_itype", "vision_day",
                           "color", "weight", "default_faction"]
@@ -237,7 +279,8 @@ class JsonTranslator():
             #TODO add support for legacy names
             # Names are special because they are an object
             if attribute == "name":
-                rawJson["name"] == rawJson["name"].get("str")
+                name = rawJson["name"].get("str")
+                rawJson["name"] = name
 
             elif translation:
                 rawJson[translation] = rawJson[attribute]
@@ -312,7 +355,12 @@ class JsonLoader():
 
         for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
-                jsonContent = json.load(openedJsonFile)
+                try:
+                    jsonContent = json.load(openedJsonFile)
+                except json.decoder.JSONDecodeError:
+                    print("Failed to read game's JSON. Did you modify it?")
+                    exit(1)
+
                 objType = ""
 
                 # Although most files are arrays of objects, some are just

@@ -4,6 +4,7 @@
         "weight": "Weight",
         "volume": "Volume",
         "price": "Price",
+        "looks-like": "Looks like",
         "price_postappoc": "Postapocalyptic price",
         "to_hit": "To hit modifier",
         "material": "Item material",
@@ -48,7 +49,8 @@
         "weight_multiplier": "Gun weight multiplier",
         "integral_weight": "Integral weight",
         "magazine_adaptor": "Magazine adaptor",
-        "acceptable_ammo": "Acceptable ammo"
+        "acceptable_ammo": "Acceptable ammo",
+        "default_mods": "Default modifications"
     },
     "mutation": {
         "movecost_flatground_modifier":"Speed modifier on flat ground",

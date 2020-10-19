@@ -206,6 +206,54 @@ class LookupFrame(tk.Frame):
         )
         itemButton.pack(side="bottom")
 
+class JsonTranslator():
+    def __init__():
+        self.translationFile = open("translation.json", "r")
+
+    def translate(self, json):
+        jsonType = json["type"]
+        json = self.filterJson(json, jsonType)
+        self.translateJson(json, jsonType)
+
+    def filterJson(self, json, jsonType)
+        unwantedValues = {
+            "all":  ["id", "type", "//", "//2"],
+            "item": ["color", "use_action", "category", "subcategory",
+                     "id_suffix", "result"],
+            "mutation":  ["valid"],
+            "bionic"  :  ["flags", "fake_item", "time"],
+            "martial_art":["initiate", "static_buffs", "onmiss_buffs",
+                          "onmove_buffs", "ondodge_buffs", "onhit_buffs",
+                          "oncrit_buffs", "onblock_buffs"],
+            "material":  ["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
+                          "ident"], #TODO
+            "vehicle": ["item", "location", "requirements", "size"],
+            "monster":   ["harvest", "revert_to_itype", "vision_day",
+                          "color", "weight", "default_faction"]
+        }
+
+        for attribute in item:
+            if attribute in unwantedValues[jsonType] or attribute in unwantedValues["all"]:
+                json.pop(attribute)
+            else:
+                continue
+        return json
+
+    def translateJson(self, json, jsonType):
+        translations = json.load(self.translationFile)
+        typeTranslations = translations[jsonType]
+        for attribute in json:
+            translation = typeTranslations.get(attribute)
+
+            #TODO add support for legacy names
+            # Names are special because they are an object
+            if attribute == "name":
+                json["name"] == json["name"].get("str")
+
+            elif translation:
+                json[translation] = json[attribute]
+                json.pop(attribute)
+
 class JsonLoader():
     def __init__(self):
         self.jsonDir = self.readJsonDir()

@@ -278,7 +278,7 @@ class JsonSearcher():
         allNames = self.rawJson[jsonType].keys()
         for name in allNames:
             similarity = self.getSimilarity(desiredName, name)
-            if similarity > 0.5:
+            if similarity > 0.7:
                 buff = {"name": name, "similarity": similarity}
                 similarities.append(buff)
 
@@ -304,7 +304,7 @@ class JsonSearcher():
                 # Checks if every given attribute is sufficiently similar to specified value
                 for attribute in attributes:
                     similarity = self.getSimilarity(attributes[attribute], entry[attribute])
-                    if similarity > 0.5:
+                    if similarity > 0.7:
                         # similarResults[entryName] = similarity
                         results.append(entryName)
                     else:

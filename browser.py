@@ -314,7 +314,7 @@ class JsonSearcher():
     def getSimilarity(self, desired, given):
         # If the given string contains desired as a substring
         if desired in given:
-            return 1
+            return 0.9
         # Strings have to be split up into character arrays for this algorithm
         desired_attr = [char for char in desired]
         given_attr = [char for char in given]
@@ -333,26 +333,6 @@ class JsonSearcher():
             attributes[key] = value
 
         return attributes
-
-#     def sortBySimilarity(self, similarEntries):
-#         sensitivities = {}
-#         for entry in similarEntries:
-#             value = similarEntries[entry]
-#             # It is possible for multiple values to have the same similarity
-#             # so it keeps the values in a list just in case.
-#             if not sensitivities.get(value):
-#                 sensitivities[value] = [entry]
-#             else:
-#                 sensitivities[value].append(entry)
-#         sortedNames = []
-
-#         # Creates a list of all the names in order by sensitivity
-#         print(list(sensitivities.keys()).sort())
-#         for sensitivity in list(sensitivities.keys()).sort():
-#             for name in sensitivities[sensitivity]:
-#                 sortedNames.append(name)
-
-#         return sortedNames
 
 class JsonLoader():
     def __init__(self):

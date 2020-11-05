@@ -113,17 +113,18 @@ class LookupFrame(tk.Frame):
     def searchItem(self):
         # Retrieves content of entry field
         search = self.searchField.get().lower()
+        self.clearResultField()
         if ":" in search:
-            results = self.searcher.searchByAttribute(search, self.currentLookup)
-            self.clearResultField()
-            for result in results:
-                self.addResult(result)
+            result = self.searcher.searchByAttribute(search, self.currentLookup)
         else:
-            item = self.searcher.searchByName(search, self.currentLookup)
-            self.clearResultField()
-            # Prints out the result
-            self.outputJson(item)
+            result = self.searcher.searchByName(search, self.currentLookup)
 
+        if isinstance(result, dict):
+            self.outputJson(result)
+        elif isinstance(result, list):
+            self.outputList(result)
+
+    # TODO Rename function
     def addResult(self, message):
         # Disabling/enabling field is done to prevent typing in Text box
         self.resultField.configure(state="normal")
@@ -142,7 +143,13 @@ class LookupFrame(tk.Frame):
         self.clearResultField()
         self.searchField.delete(0, 'end')
 
+    # Used for outputting lists of names, such as with attribute search
+    # TODO Add clickable links to output?
+    def outputList(self, results):
+        for result in results:
+            self.addResult(result)
 
+    # Used to output JSON objects
     def outputJson(self, rawJson):
         self.clearResultField()
         rawJson = self.translator.translate(rawJson, self.currentLookup)

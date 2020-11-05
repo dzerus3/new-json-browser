@@ -5,6 +5,8 @@ import os
 import textdistance
 import tkinter as tk
 
+from sys import exit
+
 class Gui(tk.Tk):
     def __init__(self, *args, **kwargs):
         self.currentLookup = "item"
@@ -67,12 +69,13 @@ class Sidebar(tk.Frame):
         )
         itemButton.pack(side="top")
 
-        mutationButton = tk.Button(
+        exitButton = tk.Button(
             self,
-            text="☣ Mutations",
+            text="Exit",
             width = bWidth,
+            command = exit
         )
-        mutationButton.pack(side="top")
+        exitButton.pack(side="top")
 
 class MainFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -80,15 +83,15 @@ class MainFrame(tk.Frame):
         welcome = tk.Label(self, text="Welcome to Dellon's JSON browser!")
         welcome.pack()
 
-class LookupFrame(tk.Frame): #TODO separate searching into separate class
+class LookupFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
         # The JSON type program will search for
         self.currentLookup = "item"
-        # The contents of the program's JSON
-        self.rawJson = controller.loadedJson.items
-
+        #TODO Does controller need to have JSON, or can we just pass it to JsonSearcher directly?
+        self.searcher = JsonSearcher(controller.loadedJson.items)
+        # Makes JSON into pretty, human-readable text
         self.translator = JsonTranslator()
 
         self.label = tk.Label(self, text=f"Welcome to the {self.currentLookup} screen.")
@@ -111,14 +114,12 @@ class LookupFrame(tk.Frame): #TODO separate searching into separate class
         # Retrieves content of entry field
         search = self.searchField.get().lower()
         if ":" in search:
-            results = self.searchByAttribute(self.currentLookup, search)
+            results = self.searcher.searchByAttribute(search, self.currentLookup)
             self.clearResultField()
             for result in results:
                 self.addResult(result)
         else:
-            # Gets the item with the name `search` from the JSON of
-            # currentLookup type
-            item = self.rawJson[self.currentLookup].get(search)
+            item = self.searcher.searchByName(search, self.currentLookup)
             self.clearResultField()
             # Prints out the result
             self.outputJson(item)
@@ -141,48 +142,6 @@ class LookupFrame(tk.Frame): #TODO separate searching into separate class
         self.clearResultField()
         self.searchField.delete(0, 'end')
 
-    def searchByAttribute(self, lookupType, string):
-        results = []
-        attributes = self.getAttributesFromString(string)
-        typeJson = self.rawJson[self.currentLookup]
-
-        # Loops through all entries of selected type
-        for entryName in typeJson:
-            entry = typeJson[entryName]
-            # Checks if entry contains all specified attributes
-            result =  all(elem in entry for elem in attributes)
-            if result:
-                # Checks if every specified attribute is equal to specified value
-                for attribute in attributes:
-                    if self.checkIfSimilar(attributes[attribute], entry[attribute]):
-                        results.append(entryName)
-                    else:
-                        break
-        return results
-
-    def checkIfSimilar(self, desired, given):
-        # If the given string contains desired as a substring
-        if desired in given:
-            return given
-        desired_attr = [char for char in desired]
-        given_attr = [char for char in given]
-
-        if textdistance.jaccard(desired_attr, given_attr) > 0.5:
-            return given
-
-        return None
-
-    def getAttributesFromString(self, string):
-        attributes = {}
-        pattern = re.compile(r"\w*:\w*")
-        # pattern = re.compile(r"\w*:\"\w*\"") #TODO
-        matches = pattern.findall(string)
-        for match in matches:
-            key = match.split(":")[0]
-            value = match.split(":")[1]
-            attributes[key] = value
-
-        return attributes
 
     def outputJson(self, rawJson):
         self.clearResultField()
@@ -294,6 +253,58 @@ class JsonTranslator():
             elif translation:
                 rawJson[translation] = rawJson[attribute]
                 rawJson.pop(attribute)
+
+class JsonSearcher():
+    def __init__(self, rawJson):
+        self.rawJson = rawJson
+
+    def searchByName(self, name, jsonType):
+        # Gets the item with the name `search` from the JSON of
+        # currentLookup type # TODO
+        return self.rawJson[jsonType].get(name)
+
+    def searchByAttribute(self, string, jsonType):
+        results = []
+        attributes = self.getAttributesFromString(string)
+        typeJson = self.rawJson[jsonType]
+
+        # Loops through all entries of selected type
+        for entryName in typeJson:
+            entry = typeJson[entryName]
+            # Checks if entry contains all specified attributes
+            result =  all(elem in entry for elem in attributes)
+            if result:
+                # Checks if every given attribute is equal to specified value
+                for attribute in attributes:
+                    similarity = self.getSimilarity(attributes[attribute], entry[attribute])
+                    if similarity > 0.5:
+                        # similarResults[entryName] = similarity
+                        results.append(entryName)
+                    else:
+                        break
+        return results
+
+    def getSimilarity(self, desired, given):
+        # If the given string contains desired as a substring
+        if desired in given:
+            return 1
+        desired_attr = [char for char in desired]
+        given_attr = [char for char in given]
+
+        # Returns a number representing how similar the two strings are
+        return textdistance.jaccard(desired_attr, given_attr)
+
+    def getAttributesFromString(self, string):
+        attributes = {}
+        pattern = re.compile(r"\w*:\w*")
+        # pattern = re.compile(r"\w*:\"\w*\"") #TODO
+        matches = pattern.findall(string)
+        for match in matches:
+            key = match.split(":")[0]
+            value = match.split(":")[1]
+            attributes[key] = value
+
+        return attributes
 
 class JsonLoader():
     def __init__(self):

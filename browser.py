@@ -268,8 +268,21 @@ class JsonSearcher():
     def searchByName(self, name, jsonType):
         # Gets the item with the name `search` from the JSON of
         # currentLookup type # TODO
-        return self.rawJson[jsonType].get(name)
+        result = self.rawJson[jsonType].get(name)
 
+        if result:
+            return result
+
+        result = []
+        keys = self.rawJson[jsonType].keys()
+        for key in keys:
+            similarity = self.getSimilarity(name, key)
+            if similarity > 0.5:
+                result.append(key)
+
+        return result
+
+    #TODO Add so user can search for any item with an attribute, without specifying attribute value.
     def searchByAttribute(self, string, jsonType):
         results = []
         attributes = self.getAttributesFromString(string)
@@ -279,9 +292,9 @@ class JsonSearcher():
         for entryName in typeJson:
             entry = typeJson[entryName]
             # Checks if entry contains all specified attributes
-            result =  all(elem in entry for elem in attributes)
-            if result:
-                # Checks if every given attribute is equal to specified value
+            containsAllAttributes = all(elem in entry for elem in attributes)
+            if containsAllAttributes:
+                # Checks if every given attribute is sufficiently similar to specified value
                 for attribute in attributes:
                     similarity = self.getSimilarity(attributes[attribute], entry[attribute])
                     if similarity > 0.5:

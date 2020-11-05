@@ -8,7 +8,6 @@ This program has been created as an offline alternative for the [Cataclysm DDA i
 
 - You do not have access to the internet for extended periods of time
 - You do not want to start up a browser just for this
-- You prefer a text only interface for one reason or another
 - You want information about something that is not an item (i.e. mutations)
 - You want to see edits that are not part of the official release
 - You want save the information for later use
@@ -21,11 +20,13 @@ Ideally, this project aims to replicate all the features currently in the item b
 - Basic user interface
 - Basic info on items, mutations, bionics, martial arts, monsters, and vehicle parts
 - Translation system to turn JSON variables into human-readable strings
+- Searching by JSON attributes
 
 ## What features are planned?
 - Advanced info on martial arts bonuses
 - Item crafting and deconstruction info
 - Hotkeys
+- Mod support
 
 ## What might be planned?
 - Clickable links (I don't know how I'll implement that yet)

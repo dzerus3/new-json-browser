@@ -2,6 +2,7 @@ import json
 import re
 import glob
 import os
+import textdistance
 import tkinter as tk
 
 class Gui(tk.Tk):
@@ -150,28 +151,36 @@ class LookupFrame(tk.Frame): #TODO separate searching into separate class
             entry = typeJson[entryName]
             # Checks if entry contains all specified attributes
             result =  all(elem in entry for elem in attributes)
-            isGood = False #TODO: There's gotta be a better way than a variable flag
             if result:
                 # Checks if every specified attribute is equal to specified value
                 for attribute in attributes:
-                    if attributes[attribute] == entry[attribute]:
-                        # print(entryName + " has " + attribute + " " + attributes[attribute])
-                        isGood = True
-                        continue
+                    if self.checkIfSimilar(attributes[attribute], entry[attribute]):
+                        results.append(entryName)
                     else:
-                        isGood = False
                         break
-            if isGood:
-                print(entryName + " is being appended to results")
-                results.append(entryName)
         return results
+
+    def checkIfSimilar(self, desired, given):
+        # If the given string contains desired as a substring
+        if desired in given:
+            return given
+        desired_attr = [char for char in desired]
+        given_attr = [char for char in given]
+
+        if textdistance.jaccard(desired_attr, given_attr) > 0.5:
+            return given
+
+        return None
 
     def getAttributesFromString(self, string):
         attributes = {}
-        pattern = re.compile(r"\w*:\w*") #TODO make it not prevent multi-word attributes (ie. weight is "100 g", which this regex will turn into "weight":"100")
+        pattern = re.compile(r"\w*:\w*")
+        # pattern = re.compile(r"\w*:\"\w*\"") #TODO
         matches = pattern.findall(string)
         for match in matches:
-            attributes[match.split(":")[0]] = match.split(":")[1]
+            key = match.split(":")[0]
+            value = match.split(":")[1]
+            attributes[key] = value
 
         return attributes
 

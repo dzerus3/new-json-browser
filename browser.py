@@ -69,6 +69,14 @@ class Sidebar(tk.Frame):
         )
         itemButton.pack(side="top")
 
+        craftingButton = tk.Button(
+            self,
+            text="Crafting",
+            width = bWidth,
+            command = lambda: self.controller.showFrame("CraftingFrame")
+        )
+        craftingButton.pack(side="top")
+
         exitButton = tk.Button(
             self,
             text="Exit",
@@ -107,6 +115,9 @@ class LookupFrame(tk.Frame):
 
         searchButton = tk.Button(self, text="Search", command=self.searchItem)
         searchButton.pack()
+
+        # Makes enter key run search too
+        controller.bind('<Return>', lambda search : self.searchItem())
 
         self.createButtons()
 
@@ -207,6 +218,9 @@ class LookupFrame(tk.Frame):
             command = lambda: self.changeCurrentLookup("item")
         )
         itemButton.pack(side="bottom")
+
+# class CraftingFrame():
+#     def __init__():
 
 class JsonTranslator():
     def __init__(self):
@@ -392,8 +406,8 @@ class JsonLoader():
     def loadJson(self):
         print("Loading items from JSON...")
 
-        self.items = {
-            "item":{},
+        self.items = { #TODO: Start reading this list from a file
+            "item":{}, #will make it more easy to add new functionality
             "mutation":{},
             "bionic":{},
             "martial_art":{},
@@ -419,7 +433,7 @@ class JsonLoader():
                     for obj in jsonContent:
                         self.handleObjectJson(obj)
 
-    def handleObjectJson(self, obj):
+    def handleObjectJson(self, obj): #TODO This works alright, but maybe something like https://stackoverflow.com/questions/8653516/python-list-of-dictionaries-search would be more flexible?
         objType = self.resolveType(obj["type"])
         if objType:
             name = self.getItemName(obj.get("name"))

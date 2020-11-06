@@ -219,8 +219,44 @@ class LookupFrame(tk.Frame):
         )
         itemButton.pack(side="bottom")
 
-# class CraftingFrame():
-#     def __init__():
+class CraftingFrame(tk.Frame): #TODO This is quite similar to LookupFrame, do we need two separate classes?
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        self.searcher = JsonSearcher(controller.loadedJson.items["recipe"])
+        # Makes JSON into pretty, human-readable text
+        self.translator = JsonTranslator()
+
+        self.label = tk.Label(self, text=f"Welcome to the crafting screen.")
+        self.label.pack(side="top")
+
+        self.searchField = tk.Entry(self)
+        self.searchField.pack()
+
+        # Where the result will pop up
+        self.resultField = tk.Text(self, height=20, width=50)
+        self.resultField.configure(state="disabled")
+        self.resultField.pack()
+
+        searchButton = tk.Button(self, text="Search", command=self.searchItem)
+        searchButton.pack()
+
+        # Makes enter key run search too
+        controller.bind('<Return>', lambda search : self.searchItem())
+
+    def searchItem(self):
+        # Retrieves content of entry field
+        search = self.searchField.get().lower()
+        self.clearResultField()
+        if ":" in search:
+            result = self.searcher.searchByAttribute(search, self.currentLookup)
+        else:
+            result = self.searcher.searchByName(search, self.currentLookup)
+
+        if isinstance(result, dict):
+            self.outputJson(result)
+        elif isinstance(result, list):
+            self.outputList(result)
 
 class JsonTranslator():
     def __init__(self):
@@ -459,7 +495,8 @@ class JsonLoader():
             "bionic": ["bionic"],
             "martial_art": ["martial_art"],
             "vehicle": ["vehicle_part"],
-            "monster": ["MONSTER"]
+            "monster": ["MONSTER"],
+            "recipe": ["recipe"]
         }
 
         for objectType in types:

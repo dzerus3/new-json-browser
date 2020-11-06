@@ -1,0 +1,22 @@
+{
+    "item": [
+        "AMMO",
+        "ARMOR",
+        "BATTERY",
+        "BIONIC_ITEM",
+        "BOOK",
+        "COMESTIBLE",
+        "GENERIC",
+        "GUN",
+        "GUNMOD",
+        "MAGAZINE",
+        "PET_ARMOR",
+        "TOOL"
+    ],
+    "mutation": ["mutation"],
+    "bionic": ["bionic"],
+    "martial_art": ["martial_art"],
+    "vehicle": ["vehicle_part"],
+    "monster": ["MONSTER"],
+    "recipe": ["recipe"]
+}

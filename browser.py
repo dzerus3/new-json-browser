@@ -384,7 +384,7 @@ class JsonSearcher():
 
         return attributes
 
-class JsonLoader():
+class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing the class itself around.
     def __init__(self):
         self.jsonDir = self.readJsonDir()
         self.jsonFiles = self.getJsonFiles()
@@ -416,7 +416,7 @@ class JsonLoader():
     # Run when the program is started for the first time, or whenever the JSON dir is not found
     def getJsonDir(self):
         print("Please enter the path to the game's JSON folder.")
-        directory = input() # TODO
+        directory = input() # TODO Add a user interface for this
 
         # Recursive call to itself until a valid location is specified
         if not os.path.isdir(directory):
@@ -434,6 +434,8 @@ class JsonLoader():
         jsonFiles = []
         wildcard = self.jsonDir + "/**/*.json"
 
+        # TODO: Change this to glob entire game directory
+        # This way it will automatically read mods too
         for jsonFile in glob.iglob(wildcard, recursive=True):
             jsonFiles.append(jsonFile)
 
@@ -441,15 +443,14 @@ class JsonLoader():
 
     def loadJson(self):
         print("Loading items from JSON...")
+        self.loadTypes()
 
-        self.items = { #TODO: Start reading this list from a file
-            "item":{}, #will make it more easy to add new functionality
-            "mutation":{},
-            "bionic":{},
-            "martial_art":{},
-            "vehicle":{},
-            "monster":{}
-        }
+        self.items = {}
+
+        # We have to pre-populate self.items with empty keys so that
+        # handleObjectJson() works correctly
+        for t in self.types.keys():
+            self.items[t] = {}
 
         for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
@@ -469,6 +470,12 @@ class JsonLoader():
                     for obj in jsonContent:
                         self.handleObjectJson(obj)
 
+    # Maps JSON types to an easily readable type string
+    # Done solely for the sake of converting all the item types to "item"
+    def loadTypes(self):
+        with open("types.json", "r") as typeFile:
+            self.types = dict(json.load(typeFile))
+
     def handleObjectJson(self, obj): #TODO This works alright, but maybe something like https://stackoverflow.com/questions/8653516/python-list-of-dictionaries-search would be more flexible?
         objType = self.resolveType(obj["type"])
         if objType:
@@ -476,31 +483,8 @@ class JsonLoader():
             self.items[objType][name] = obj
 
     def resolveType(self, jsonType):
-        types = {
-            "item": [
-                "AMMO", # Ammunition for guns
-                "ARMOR", # Wearable clothing
-                "BATTERY", # Batteries
-                "BIONIC_ITEM", # Bionic modules
-                "BOOK", # Readable book
-                "COMESTIBLE", # Food
-                "GENERIC", # Random things
-                "GUN", # Firearms
-                "GUNMOD", # Gun modifications
-                "MAGAZINE", # Magazines for guns
-                "PET_ARMOR", # Armor wearable by pets
-                "TOOL" # Tools and bombs
-            ],
-            "mutation": ["mutation"],
-            "bionic": ["bionic"],
-            "martial_art": ["martial_art"],
-            "vehicle": ["vehicle_part"],
-            "monster": ["MONSTER"],
-            "recipe": ["recipe"]
-        }
-
-        for objectType in types:
-            if jsonType in types[objectType]:
+        for objectType in self.types:
+            if jsonType in self.types[objectType]:
                 return objectType
 
         return None

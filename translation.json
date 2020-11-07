@@ -1,5 +1,6 @@
 {
     "item": {
+        "name": "Name",
         "description": "Description",
         "weight": "Weight",
         "volume": "Volume",

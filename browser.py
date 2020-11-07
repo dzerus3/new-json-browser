@@ -126,9 +126,10 @@ class LookupFrame(tk.Frame):
         search = self.searchField.get().lower()
         self.clearResultField()
         if ":" in search:
-            result = self.searcher.searchByAttribute(search, self.currentLookup)
+            attributes = self.searcher.getAttributesFromString(search)
+            result = self.searcher.searchByAttribute(attributes, self.currentLookup)
         else:
-            result = self.searcher.searchByName(search, self.currentLookup)
+            result = self.searcher.searchByAttribute({"name": search}, self.currentLookup)
 
         if isinstance(result, dict):
             self.outputJson(result)
@@ -249,9 +250,10 @@ class CraftingFrame(tk.Frame): #TODO This is quite similar to LookupFrame, do we
         search = self.searchField.get().lower()
         self.clearResultField()
         if ":" in search:
-            result = self.searcher.searchByAttribute(search, self.currentLookup)
+            attributes = self.searcher.getAttributesFromString(search)
+            result = self.searcher.searchByAttribute(attributes, self.currentLookup)
         else:
-            result = self.searcher.searchByName(search, self.currentLookup)
+            result = self.searcher.searchByAttribute({"name": search}, self.currentLookup)
 
         if isinstance(result, dict):
             self.outputJson(result)
@@ -265,9 +267,8 @@ class JsonTranslator():
 
     def translate(self, rawJson, jsonType):
         rawJson = self.filterJson(rawJson, jsonType)
-        self.translateJson(rawJson, jsonType)
 
-        return rawJson
+        return self.translateJson(rawJson, jsonType)
         #TODO add special case for martial arts bonuses.
 
     def filterJson(self, rawJson, jsonType):
@@ -281,7 +282,7 @@ class JsonTranslator():
                           "onmove_buffs", "ondodge_buffs", "onhit_buffs",
                           "oncrit_buffs", "onblock_buffs"],
             "material":  ["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
-                          "ident"], #TODO add material search
+                          "ident"],
             "vehicle": ["item", "location", "requirements", "size"],
             "monster":   ["harvest", "revert_to_itype", "vision_day",
                           "color", "weight", "default_faction"]
@@ -298,67 +299,63 @@ class JsonTranslator():
 
     def translateJson(self, rawJson, jsonType):
         typeTranslations = self.translations[jsonType]
+        translatedJson = {}
         for attribute in rawJson:
             translation = typeTranslations.get(attribute)
+            if translation:
+                translatedJson[translation] = rawJson[attribute]
+            else:
+                translatedJson[attribute] = rawJson[attribute]
 
-            #TODO add support for legacy names
-            # Names are special because they are an object
-            if attribute == "name":
-                name = rawJson["name"].get("str")
-                rawJson["name"] = name
-
-            elif translation:
-                rawJson[translation] = rawJson[attribute]
-                rawJson.pop(attribute)
+        return translatedJson
 
 class JsonSearcher():
     def __init__(self, rawJson):
         self.rawJson = rawJson
 
-    def searchByName(self, desiredName, jsonType):
-        # Gets the item with the name `search` from the JSON of
-        # currentLookup type # TODO
-        result = self.rawJson[jsonType].get(desiredName)
-
-        if result:
-            return result
-
-        similarities = []
-        result = []
-        allNames = self.rawJson[jsonType].keys()
-        for name in allNames:
-            similarity = self.getSimilarity(desiredName, name)
-            if similarity > 0.7:
-                buff = {"name": name, "similarity": similarity}
-                similarities.append(buff)
-
-        # Sorts the array based on the dicts' similarity value, and returns the name values
-        sortedSimilarities = sorted(similarities, key=lambda s: s["similarity"], reverse=True)
-        for value in sortedSimilarities:
-            result.append(value["name"])
-
-        return result
-
     #TODO Add so user can search for any item with an attribute, without specifying attribute value.
-    def searchByAttribute(self, string, jsonType):
+    def searchByAttribute(self, attributes, jsonType):
         results = []
-        attributes = self.getAttributesFromString(string)
+        similarities = []
+        # attributes = self.getAttributesFromString(string)
         typeJson = self.rawJson[jsonType]
 
         # Loops through all entries of selected type
-        for entryName in typeJson:
-            entry = typeJson[entryName]
+        for entry in typeJson:
             # Checks if entry contains all specified attributes
-            containsAllAttributes = all(elem in entry for elem in attributes)
+            #FIXME There is an issue where entry will sometimes turn into a NoneType when searching for monsters.
+            # It is fairly easy to ignore, but I should check if there is a bigger problem.
+            try:
+                containsAllAttributes = all(elem in entry for elem in attributes)
+            except:
+                continue
             if containsAllAttributes:
                 # Checks if every given attribute is sufficiently similar to specified value
+                failed = False
+                # Sum of all similarities. Used for averaging and sorting
+                totalSimilarity = 0
+                equal = 0
                 for attribute in attributes:
                     similarity = self.getSimilarity(attributes[attribute], entry[attribute])
-                    if similarity > 0.7:
-                        # similarResults[entryName] = similarity
-                        results.append(entryName)
+                    # if similarity == 1:
+                    if attributes[attribute] == entry[attribute]:
+                        equal += 1
+                        totalSimilarity += 1
+                    elif similarity > 0.7:
+                        totalSimilarity += similarity
                     else:
+                        failed = True
                         break
+                if equal == len(attributes):
+                    return entry
+                elif not failed:
+                    avgSimilarity = totalSimilarity / len(attributes)
+                    buff = {"name": entry["name"], "similarity": avgSimilarity}
+                    similarities.append(buff)
+
+        sortedSimilarities = sorted(similarities, key=lambda s: s["similarity"], reverse=True)
+        for value in sortedSimilarities:
+            results.append(value["name"])
         return results
 
     def getSimilarity(self, desired, given):
@@ -450,7 +447,7 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
         # We have to pre-populate self.items with empty keys so that
         # handleObjectJson() works correctly
         for t in self.types.keys():
-            self.items[t] = {}
+            self.items[t] = []
 
         for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
@@ -479,8 +476,8 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
     def handleObjectJson(self, obj): #TODO This works alright, but maybe something like https://stackoverflow.com/questions/8653516/python-list-of-dictionaries-search would be more flexible?
         objType = self.resolveType(obj["type"])
         if objType:
-            name = self.getItemName(obj.get("name"))
-            self.items[objType][name] = obj
+            namedObj = self.setObjName(obj)
+            self.items[objType].append(namedObj)
 
     def resolveType(self, jsonType):
         for objectType in self.types:
@@ -489,15 +486,18 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
 
         return None
 
-    def getItemName(self, name):
+    def setObjName(self, obj):
+        name = obj.get("name")
         # Checks whether the name is a legacy name
         # lowercases name so search is not case sensitive
         if isinstance(name, str):
-            return name.lower()
+            obj["name"] = name.lower()
         elif isinstance(name, dict):
-            return name.get("str").lower()
+            obj["name"] = name.get("str").lower()
         else:
-            return "NONE"
+            return None
+
+        return obj
 
 def main():
     gui = Gui()

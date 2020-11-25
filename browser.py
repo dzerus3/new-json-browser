@@ -493,7 +493,11 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
         if isinstance(name, str):
             obj["name"] = name.lower()
         elif isinstance(name, dict):
-            obj["name"] = name.get("str").lower()
+            buff = name.get("str")
+            if buff:
+                obj["name"] = buff.lower()
+            else:
+                obj["name"] = name.get("str_sp").lower()
         else:
             return None
 

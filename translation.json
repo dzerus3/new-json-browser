@@ -1,6 +1,7 @@
 {
     "item": {
-        "name": "Name",
+        "name": "Item name",
+	"id":"ID",
         "description": "Description",
         "weight": "Weight",
         "volume": "Volume",
@@ -54,6 +55,8 @@
         "default_mods": "Default modifications"
     },
     "mutation": {
+	"id":"ID",
+	"name":"Mutation name",
         "movecost_flatground_modifier":"Speed modifier on flat ground",
         "hearing_modifier": "Hearing strength",
         "starting_trait": "Chooseable on character selection",
@@ -89,8 +92,48 @@
         "vitamins_absorb_multi": "Nutrition absorption factors",
         "description": "Description"
     },
-    "bionic": {},
-    "martial_art": {},
+    "bionic": {
+    	"id": "ID",
+	"name": "Name",
+	"description": "Description",
+	"occupied_bodyparts": "Occupied bodyparts",
+	"act_cost": "Activation cost",
+	"encumbrance": "Encumbrance",
+	"react_cost": "Reactivation cost"
+    },
+    "martial_art": {
+    	"id": "ID",
+	"name": "Name",
+	"description": "Description",
+	"learn_difficulty": "Learning difficulty",
+	"arm_block": "Blocking with arms",
+	"leg_block": "Blocking with legs",
+	"techniques": "Techniques",
+	"weapons": "Valid weapons"
+    },
     "vehicle": {},
-    "monster": {}
+    "monster": {
+    	"id": "Monster ID",
+	"name": "Monster name",
+	"symbol": "Symbol",
+	"description": "Description",
+	"bodytype": "Body type",
+	"species": "Species",
+	"hp": "Health",
+	"speed": "Speed",
+	"material": "Materials",
+	"symbol": "Symbol",
+	"aggression": "Aggression",
+	"morale": "Morale",
+	"melee_skill": "Melee skill",
+	"melee_dice": "Melee dice",
+	"melee_dice_sides": "Melee dice sides",
+	"melee_cut": "Melee cut",
+	"death_drops": "Drops on death",
+	"death_function": "Events on death",
+	"vision_night": "Vision at night",
+	"special_attacks": "Special attacks",
+	"burn_into": "Turns into when burned",
+	"upgrades": "Upgrades"
+    }
 }

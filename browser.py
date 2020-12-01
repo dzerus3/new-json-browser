@@ -9,9 +9,9 @@ from sys import exit
 
 class Gui(tk.Tk):
     def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
         self.currentLookup = "item"
         self.loadedJson = JsonLoader()
-        tk.Tk.__init__(self, *args, **kwargs)
 
         # A big container for the main frame
         self.container = tk.Frame(self)

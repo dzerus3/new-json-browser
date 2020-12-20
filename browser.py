@@ -325,10 +325,11 @@ class JsonSearcher():
             # Checks if entry contains all specified attributes
             #FIXME There is an issue where entry will sometimes turn into a NoneType when searching for monsters.
             # It is fairly easy to ignore, but I should check if there is a bigger problem.
-            try:
-                containsAllAttributes = all(elem in entry for elem in attributes)
-            except:
-                continue
+            # try:
+            containsAllAttributes = all(elem in entry for elem in attributes)
+            # except:
+            #     print(entry)
+            #     continue
             if containsAllAttributes:
                 # Checks if every given attribute is sufficiently similar to specified value
                 failed = False
@@ -451,7 +452,7 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
 
         for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
-                try:
+                try: #TODO Replace with if?
                     jsonContent = json.load(openedJsonFile)
                 except json.decoder.JSONDecodeError:
                     print("Failed to read game's JSON. Did you modify it?")
@@ -473,7 +474,7 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
         with open("types.json", "r") as typeFile:
             self.types = dict(json.load(typeFile))
 
-    def handleObjectJson(self, obj): #TODO This works alright, but maybe something like https://stackoverflow.com/questions/8653516/python-list-of-dictionaries-search would be more flexible?
+    def handleObjectJson(self, obj):
         objType = self.resolveType(obj["type"])
         if objType:
             namedObj = self.setObjName(obj)
@@ -483,9 +484,9 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
         for objectType in self.types:
             if jsonType in self.types[objectType]:
                 return objectType
-
         return None
 
+    # Makes name more search friendly.
     def setObjName(self, obj):
         name = obj.get("name")
         # Checks whether the name is a legacy name
@@ -498,9 +499,6 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
                 obj["name"] = buff.lower()
             else:
                 obj["name"] = name.get("str_sp").lower()
-        else:
-            return None
-
         return obj
 
 def main():

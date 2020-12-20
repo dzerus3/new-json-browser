@@ -314,32 +314,23 @@ class JsonSearcher():
         self.rawJson = rawJson
 
     #TODO Add so user can search for any item with an attribute, without specifying attribute value.
-    def searchByAttribute(self, attributes, jsonType):
+    def searchByAttribute(self, requiredAttributes, jsonType):
         results = []
         similarities = []
         # attributes = self.getAttributesFromString(string)
         typeJson = self.rawJson[jsonType]
 
-        # Loops through all entries of selected type
         for entry in typeJson:
-            # Checks if entry contains all specified attributes
-            #FIXME There is an issue where entry will sometimes turn into a NoneType when searching for monsters.
-            # It is fairly easy to ignore, but I should check if there is a bigger problem.
-            # try:
-            containsAllAttributes = all(elem in entry for elem in attributes)
-            # except:
-            #     print(entry)
-            #     continue
-            if containsAllAttributes:
+            if self.containsAllAttributes(entry, requiredAttributes):
+                #TODO refactor
                 # Checks if every given attribute is sufficiently similar to specified value
                 failed = False
                 # Sum of all similarities. Used for averaging and sorting
                 totalSimilarity = 0
                 equal = 0
-                for attribute in attributes:
-                    similarity = self.getSimilarity(attributes[attribute], entry[attribute])
-                    # if similarity == 1:
-                    if attributes[attribute] == entry[attribute]:
+                for attribute in requiredAttributes:
+                    similarity = self.getSimilarity(requiredAttributes[attribute], entry[attribute])
+                    if requiredAttributes[attribute] == entry[attribute]:
                         equal += 1
                         totalSimilarity += 1
                     elif similarity > 0.7:
@@ -347,10 +338,10 @@ class JsonSearcher():
                     else:
                         failed = True
                         break
-                if equal == len(attributes):
+                if equal == len(requiredAttributes):
                     return entry
                 elif not failed:
-                    avgSimilarity = totalSimilarity / len(attributes)
+                    avgSimilarity = totalSimilarity / len(requiredAttributes)
                     buff = {"name": entry["name"], "similarity": avgSimilarity}
                     similarities.append(buff)
 
@@ -358,6 +349,10 @@ class JsonSearcher():
         for value in sortedSimilarities:
             results.append(value["name"])
         return results
+
+    # Checks if entry contains all specified attributes
+    def containsAllAttributes(self, entry, attributes):
+        return all(elem in entry for elem in attributes)
 
     def getSimilarity(self, desired, given):
         # If the given string contains desired as a substring

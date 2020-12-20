@@ -315,40 +315,55 @@ class JsonSearcher():
 
     #TODO Add so user can search for any item with an attribute, without specifying attribute value.
     def searchByAttribute(self, requiredAttributes, jsonType):
-        results = []
         similarities = []
         # attributes = self.getAttributesFromString(string)
         typeJson = self.rawJson[jsonType]
 
         for entry in typeJson:
             if self.containsAllAttributes(entry, requiredAttributes):
-                #TODO refactor
-                # Checks if every given attribute is sufficiently similar to specified value
-                failed = False
-                # Sum of all similarities. Used for averaging and sorting
-                totalSimilarity = 0
-                equal = 0
-                for attribute in requiredAttributes:
-                    similarity = self.getSimilarity(requiredAttributes[attribute], entry[attribute])
-                    if requiredAttributes[attribute] == entry[attribute]:
-                        equal += 1
-                        totalSimilarity += 1
-                    elif similarity > 0.7:
-                        totalSimilarity += similarity
-                    else:
-                        failed = True
-                        break
-                if equal == len(requiredAttributes):
+                attributeSimilarity = self.checkAttributeSimilarity(entry, requiredAttributes)
+
+                if attributeSimilarity == 100:
                     return entry
-                elif not failed:
-                    avgSimilarity = totalSimilarity / len(requiredAttributes)
-                    buff = {"name": entry["name"], "similarity": avgSimilarity}
+                elif attributeSimilarity > 0:
+                    buff = {"name": entry["name"], "similarity": attributeSimilarity}
                     similarities.append(buff)
+        results = self.sortBySimilarity(similarities)
+
+        return results
+
+    def sortBySimilarity(self, similarities):
+        results = []
 
         sortedSimilarities = sorted(similarities, key=lambda s: s["similarity"], reverse=True)
         for value in sortedSimilarities:
             results.append(value["name"])
+
         return results
+
+    def checkAttributeSimilarity(self, entry, requiredAttributes):
+        # Checks if every given attribute is sufficiently similar to specified value
+        failed = False
+        # Sum of all similarities. Used for averaging and sorting
+        totalSimilarity = 0
+        equal = 0
+        for attribute in requiredAttributes:
+            similarity = self.getSimilarity(requiredAttributes[attribute], entry[attribute])
+            if requiredAttributes[attribute] == entry[attribute]:
+                equal += 1
+                totalSimilarity += 1
+            elif similarity > 0.7:
+                totalSimilarity += similarity
+            else:
+                totalSimilarity = 0
+                break
+
+        if equal == len(requiredAttributes):
+            return 100
+        elif totalSimilarity:
+            return totalSimilarity / len(requiredAttributes)
+        else:
+            return 0
 
     # Checks if entry contains all specified attributes
     def containsAllAttributes(self, entry, attributes):

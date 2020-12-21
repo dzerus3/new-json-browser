@@ -4,7 +4,6 @@ import jsonhandler
 class Gui(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        self.currentLookup = "item"
         self.loadedJson = jsonhandler.JsonLoader()
 
         # A big container for the main frame
@@ -23,7 +22,7 @@ class Gui(tk.Tk):
 
     def createMainFrame(self):
         self.frames = {}
-        for Frame in (MainFrame, LookupFrame):
+        for Frame in (MainFrame, ItemFrame, CraftingFrame):
             frameName = Frame.__name__
             frameInstance = Frame(parent=self.container, controller=self)
             self.frames[frameName] = frameInstance
@@ -57,9 +56,9 @@ class Sidebar(tk.Frame):
 
         itemButton = tk.Button(
             self,
-            text="Lookup",
+            text="Items",
             width = bWidth,
-            command = lambda: self.controller.showFrame("LookupFrame")
+            command = lambda: self.controller.showFrame("ItemFrame")
         )
         itemButton.pack(side="top")
 
@@ -89,14 +88,19 @@ class LookupFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        # The JSON type program will search for
-        self.currentLookup = "item"
-        #TODO Does controller need to have JSON, or can we just pass it to JsonSearcher directly?
+        self.setLookupType()
+        self.createJsonSearcher(controller)
+        self.createUI()
+
+    def setLookupType(self, lookupType="item"):
+        self.currentLookupType = lookupType
+
+    def createJsonSearcher(self, controller):
         self.searcher = jsonhandler.JsonSearcher(controller.loadedJson.items)
-        # Makes JSON into pretty, human-readable text
         self.translator = jsonhandler.JsonTranslator()
 
-        self.label = tk.Label(self, text=f"Welcome to the {self.currentLookup} screen.")
+    def createUI(self):
+        self.label = tk.Label(self, text=self.getWelcomeMessage())
         self.label.pack(side="top")
 
         self.searchField = tk.Entry(self)
@@ -110,28 +114,7 @@ class LookupFrame(tk.Frame):
         searchButton = tk.Button(self, text="Search", command=self.searchItem)
         searchButton.pack()
 
-        # Makes enter key run search too
-        controller.bind('<Return>', lambda search : self.searchItem())
-
-        self.createButtons()
-
-    def searchItem(self):
-        # Retrieves content of entry field
-        search = self.searchField.get().lower()
-        self.clearResultField()
-        if ":" in search:
-            attributes = self.searcher.getAttributesFromString(search)
-            result = self.searcher.searchByAttribute(attributes, self.currentLookup)
-        else:
-            result = self.searcher.searchByAttribute({"name": search}, self.currentLookup)
-
-        if isinstance(result, dict):
-            self.outputJson(result)
-        elif isinstance(result, list):
-            self.outputList(result)
-
-    # TODO Rename function
-    def addResult(self, message):
+    def addLine(self, message):
         # Disabling/enabling field is done to prevent typing in Text box
         self.resultField.configure(state="normal")
         self.resultField.insert(tk.END, str(message) + "\n")
@@ -143,8 +126,7 @@ class LookupFrame(tk.Frame):
         self.resultField.configure(state="disabled")
 
     def changeCurrentLookup(self, lookupType):
-        self.currentLookup = lookupType
-        self.label["text"] = f"Welcome to the {lookupType} screen."
+        self.currentLookupType = lookupType
         # Also clears the screen, makes for better UX
         self.clearResultField()
         self.searchField.delete(0, 'end')
@@ -153,14 +135,59 @@ class LookupFrame(tk.Frame):
     # TODO Add clickable links to output?
     def outputList(self, results):
         for result in results:
-            self.addResult(result)
+            self.addLine(result)
 
     # Used to output JSON objects
     def outputJson(self, rawJson):
         self.clearResultField()
-        rawJson = self.translator.translate(rawJson, self.currentLookup)
+        rawJson = self.translator.translate(rawJson, self.currentLookupType)
         for attribute in rawJson:
-            self.addResult(attribute + ": " + str(rawJson[attribute]))
+            self.addLine(attribute + ": " + str(rawJson[attribute]))
+
+    def searchItem(self):
+        # Retrieves content of entry field
+        search = self.searchField.get().lower()
+        self.clearResultField()
+
+        result = self.getResult(search)
+        self.outputResult(result)
+
+    def getResult(self, search):
+        if ":" in search:
+            attributes = self.searcher.getAttributesFromString(search)
+            result = self.searcher.searchByAttribute(attributes, self.currentLookupType)
+        else:
+            result = self.searcher.searchByAttribute({"name": search}, self.currentLookupType)
+        return result
+
+    def outputResult(self, result):
+        if isinstance(result, dict):
+            self.outputJson(result)
+        elif isinstance(result, list):
+            self.outputList(result)
+
+    def getWelcomeMessage(self):
+        pass
+
+class ItemFrame(LookupFrame):
+    def getWelcomeMessage(self):
+        return "Welcome to the item screen"
+
+    def createUI(self):
+        self.label = tk.Label(self, text=self.getWelcomeMessage())
+        self.label.pack(side="top")
+
+        self.searchField = tk.Entry(self)
+        self.searchField.pack()
+
+        # Where the result will pop up
+        self.resultField = tk.Text(self, height=20, width=50)
+        self.resultField.configure(state="disabled")
+        self.resultField.pack()
+
+        searchButton = tk.Button(self, text="Search", command=self.searchItem)
+        searchButton.pack()
+        self.createButtons()
 
     def createButtons(self):
         # Default width for all buttons
@@ -218,7 +245,7 @@ class CraftingFrame(tk.Frame): #TODO This is quite similar to LookupFrame, do we
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        self.searcher = jsonhandler.JsonSearcher(controller.loadedJson.items["recipe"])
+        self.searcher = jsonhandler.JsonSearcher(controller.loadedJson)
         # Makes JSON into pretty, human-readable text
         self.translator = jsonhandler.JsonTranslator()
 
@@ -237,19 +264,33 @@ class CraftingFrame(tk.Frame): #TODO This is quite similar to LookupFrame, do we
         searchButton.pack()
 
         # Makes enter key run search too
-        controller.bind('<Return>', lambda search : self.searchItem())
+        # controller.bind('<Return>', lambda search : self.searchItem()) #TODO
 
     def searchItem(self):
         # Retrieves content of entry field
         search = self.searchField.get().lower()
         self.clearResultField()
-        if ":" in search:
-            attributes = self.searcher.getAttributesFromString(search)
-            result = self.searcher.searchByAttribute(attributes, self.currentLookup)
-        else:
-            result = self.searcher.searchByAttribute({"name": search}, self.currentLookup)
 
-        if isinstance(result, dict):
+        item = self.searcher.searchByAttribute({"name": search}, "item")["id"]
+        recipe = self.searcher.searchByAttribute({"recipe": item}, "recipe")
+
+        if isinstance(recipe, dict):
             self.outputJson(result)
-        elif isinstance(result, list):
+        elif isinstance(recipe, list):
             self.outputList(result)
+
+    def outputList(self, results):
+        for result in results:
+            self.addResult(result)
+
+    # Used to output JSON objects
+    def outputJson(self, rawJson):
+        self.clearResultField()
+        rawJson = self.translator.translate(rawJson, self.currentLookupType)
+        for attribute in rawJson:
+            self.addResult(attribute + ": " + str(rawJson[attribute]))
+
+    def clearResultField(self):
+        self.resultField.configure(state="normal")
+        self.resultField.delete("1.0", "end")
+        self.resultField.configure(state="disabled")

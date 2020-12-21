@@ -144,10 +144,7 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
 
         return jsonFiles
 
-    def loadJson(self):
-        print("Loading items from JSON...")
-        self.loadTypes()
-
+    def createItemsDict(self):
         self.items = {}
 
         # We have to pre-populate self.items with empty keys so that
@@ -155,16 +152,14 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
         for t in self.types.keys():
             self.items[t] = []
 
+    def loadJson(self):
+        print("Loading items from JSON...")
+        self.loadTypes()
+        self.createItemsDict()
+
         for jsonFile in self.jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
-                try: #TODO Replace with if?
-                    jsonContent = json.load(openedJsonFile)
-                except json.decoder.JSONDecodeError:
-                    print("Failed to read game's JSON. Did you modify it?")
-                    exit(1)
-
-                objType = ""
-
+                jsonContent = self.loadJsonFile(openedJsonFile)
                 # Although most files are arrays of objects, some are just
                 # one object. This needs to be handled.
                 if isinstance(jsonContent, dict):
@@ -172,6 +167,15 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
                 else:
                     for obj in jsonContent:
                         self.handleObjectJson(obj)
+
+    def loadJsonFile(self, openedJsonFile):
+        try: #TODO Replace with if?
+            jsonContent = json.load(openedJsonFile)
+        except json.decoder.JSONDecodeError:
+            print("Failed to read game's JSON. Did you modify it?")
+            exit(1)
+
+        return jsonContent
 
     # Maps JSON types to an easily readable type string
     # Done solely for the sake of converting all the item types to "item"

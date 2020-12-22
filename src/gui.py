@@ -39,11 +39,6 @@ class Gui(tk.Tk):
         frame = self.frames[frameName]
         frame.tkraise()
 
-    # https://stackoverflow.com/a/28623781
-    def clearFrame(self, frame):
-        for widget in frame.winfo_children():
-            widget.destroy()
-
 class Sidebar(tk.Frame):
     def __init__(self, controller):
         tk.Frame.__init__(self)
@@ -91,6 +86,7 @@ class LookupFrame(tk.Frame):
         self.setLookupType()
         self.createJsonSearcher(controller)
         self.createUI()
+        self.assignHotkeys()
 
     def setLookupType(self, lookupType="item"):
         self.currentLookupType = lookupType
@@ -169,6 +165,9 @@ class LookupFrame(tk.Frame):
     def getWelcomeMessage(self):
         pass
 
+    def assignHotkeys(self):
+        pass
+
 class ItemFrame(LookupFrame):
     def getWelcomeMessage(self):
         return "Welcome to the item screen"
@@ -241,56 +240,19 @@ class ItemFrame(LookupFrame):
         )
         itemButton.pack(side="bottom")
 
-class CraftingFrame(tk.Frame): #TODO This is quite similar to LookupFrame, do we need two separate classes?
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-
-        self.searcher = jsonhandler.JsonSearcher(controller.loadedJson)
-        # Makes JSON into pretty, human-readable text
-        self.translator = jsonhandler.JsonTranslator()
-
-        self.label = tk.Label(self, text=f"Welcome to the crafting screen.")
-        self.label.pack(side="top")
-
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
-
-        # Where the result will pop up
-        self.resultField = tk.Text(self, height=20, width=50)
-        self.resultField.configure(state="disabled")
-        self.resultField.pack()
-
-        searchButton = tk.Button(self, text="Search", command=self.searchItem)
-        searchButton.pack()
-
-        # Makes enter key run search too
-        # controller.bind('<Return>', lambda search : self.searchItem()) #TODO
-
+class CraftingFrame(LookupFrame):
     def searchItem(self):
         # Retrieves content of entry field
         search = self.searchField.get().lower()
         self.clearResultField()
 
         item = self.searcher.searchByAttribute({"name": search}, "item")["id"]
-        recipe = self.searcher.searchByAttribute({"recipe": item}, "recipe")
+        recipe = self.searcher.searchByAttribute({"result": item}, "recipe")
 
         if isinstance(recipe, dict):
-            self.outputJson(result)
+            self.outputJson(recipe)
         elif isinstance(recipe, list):
-            self.outputList(result)
+            self.outputList(recipe)
 
-    def outputList(self, results):
-        for result in results:
-            self.addResult(result)
-
-    # Used to output JSON objects
-    def outputJson(self, rawJson):
-        self.clearResultField()
-        rawJson = self.translator.translate(rawJson, self.currentLookupType)
-        for attribute in rawJson:
-            self.addResult(attribute + ": " + str(rawJson[attribute]))
-
-    def clearResultField(self):
-        self.resultField.configure(state="normal")
-        self.resultField.delete("1.0", "end")
-        self.resultField.configure(state="disabled")
+    def getWelcomeMessage(self):
+        return "Welcome to the crafting frame"

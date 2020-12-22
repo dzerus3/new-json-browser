@@ -232,11 +232,12 @@ class JsonTranslator():
             "martial_art":["initiate", "static_buffs", "onmiss_buffs",
                           "onmove_buffs", "ondodge_buffs", "onhit_buffs",
                           "oncrit_buffs", "onblock_buffs"],
-            "material":  ["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
+            "material":["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
                           "ident"],
             "vehicle": ["item", "location", "requirements", "size"],
-            "monster":   ["harvest", "revert_to_itype", "vision_day",
-                          "color", "weight", "default_faction"]
+            "monster": ["harvest", "revert_to_itype", "vision_day",
+                          "color", "weight", "default_faction"],
+            "recipe": ["category", "subcategory"]
         }
 
         resultJson = {}

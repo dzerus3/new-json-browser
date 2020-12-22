@@ -256,3 +256,6 @@ class CraftingFrame(LookupFrame):
 
     def getWelcomeMessage(self):
         return "Welcome to the crafting frame"
+
+    def setLookupType(self, lookupType="recipe"):
+        self.currentLookupType = lookupType

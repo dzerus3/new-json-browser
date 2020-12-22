@@ -21,8 +21,9 @@ class JsonSearcher():
                 if attributeSimilarity == 100:
                     return entry
                 elif attributeSimilarity > 0:
-                    buff = {"name": entry["name"], "similarity": attributeSimilarity}
-                    similarities.append(buff)
+                    if entry.get("name"):
+                        buff = {"name": entry["name"], "similarity": attributeSimilarity}
+                        similarities.append(buff)
         results = self.sortBySimilarity(similarities)
 
         return results

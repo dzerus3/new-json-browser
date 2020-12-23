@@ -21,21 +21,18 @@ Ideally, this project aims to replicate all the features currently in the item b
 - Basic info on items, mutations, bionics, martial arts, monsters, and vehicle parts
 - Translation system to turn JSON variables into human-readable strings
 - Searching by JSON attributes
+- Mod support
 
 ## What features are planned?
 - Advanced info on martial arts bonuses
 - Item crafting and disassembly info
 - Hotkeys
-- Mod support
 - Improvements to the martial arts and vehicle sections
 - Sections for vehicles and item materials
-- Improvements to searching by attribute
 - Clickable links-like system for items
 - Performance improvements
 - UI improvement
-
-## What might be planned?
-- Favorite items (Don't really know how this would work)
+- Favorite items
 
 ## Why the rewrite?
 This project is a rewrite of the original Cataclysm JSON Browser, which I wrote about 9 months ago. The truth is, at that time I had little experience with code, and the last program I wrote at that point was finished more than a year ago. Most of the code was beyond salvage. I didn't really bother with writing things like classes, the program was built from the ground up with a command line interface in mind, and the method for choosing which JSON to load was convoluted and broken. I have learned quite a bit since then, and although this is not perfect, I believe I have remedied the critical problems.

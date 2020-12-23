@@ -1,10 +1,10 @@
 import tkinter as tk
+from os.path import isdir
 import jsonhandler
 
 class Gui(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        self.loadedJson = jsonhandler.JsonLoader()
 
         # A big container for the main frame
         self.container = tk.Frame(self)
@@ -12,9 +12,30 @@ class Gui(tk.Tk):
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
 
-        self.createMainFrame()
+        self.checkGameDirectory()
+
         self.createSidebar()
         self.mainloop()
+
+    def checkGameDirectory(self):
+        self.jsonLoader = jsonhandler.JsonLoader()
+        directory = self.jsonLoader.readJsonDir()
+        if not directory:
+            self.createDirectoryFrame()
+        else:
+            self.createScreens(directory)
+
+    def createDirectoryFrame(self):
+        frameName = "directory"
+        frameInstance = DirectoryFrame(parent=self.container, controller=self)
+        # self.frames[frameName] = frameInstance
+
+        frameInstance.grid(row=0, column=0, sticky="nsew")
+        frameInstance.tkraise()
+
+    def createScreens(self, directory):
+        self.loadedJson = self.jsonLoader.getJson()
+        self.createMainFrame()
 
     def createSidebar(self):
         self.sidebar = Sidebar(controller=self)
@@ -31,7 +52,6 @@ class Gui(tk.Tk):
             # the one on the top of the stacking order
             # will be the one that is visible.
             frameInstance.grid(row=0, column=0, sticky="nsew")
-
         self.showFrame("MainFrame")
 
     # Moves specified frame to the top, making it replace current one
@@ -73,6 +93,30 @@ class Sidebar(tk.Frame):
         )
         exitButton.pack(side="top")
 
+class DirectoryFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        self.controller = controller
+
+        self.label = tk.Label(self, text="Enter the path to the game folder")
+        self.label.pack(side="top")
+
+        self.dirField = tk.Entry(self)
+        self.dirField.pack()
+
+        searchButton = tk.Button(self, text="Enter", command=self.checkDir)
+        searchButton.pack()
+
+    def checkDir(self):
+        directory = self.dirField.get()
+        if isdir(directory):
+            self.controller.jsonLoader.writeJsonDir(directory)
+            self.controller.jsonLoader.setJsonDir(directory)
+            self.controller.createScreens(directory)
+        else:
+            self.label["text"] = "Not a valid path."
+
 class MainFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -92,7 +136,7 @@ class LookupFrame(tk.Frame):
         self.currentLookupType = lookupType
 
     def createJsonSearcher(self, controller):
-        self.searcher = jsonhandler.JsonSearcher(controller.loadedJson.items)
+        self.searcher = jsonhandler.JsonSearcher(controller.loadedJson)
         self.translator = jsonhandler.JsonTranslator()
 
     def createUI(self):

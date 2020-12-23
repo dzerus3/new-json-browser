@@ -88,34 +88,41 @@ class JsonSearcher():
 
         return attributes
 
-class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing the class itself around.
-    def __init__(self):
-        self.jsonDir = self.readJsonDir()
-        self.jsonFiles = self.getJsonFiles()
-        self.loadedJson = self.loadJson()
+class JsonLoader():
+    def getJson(self):
+        jsonFiles = self.getJsonFiles()
+        self.loadJson(jsonFiles)
+        return self.items
 
     # Get the Json directory from file; thanks to @rektrex for this function
     def readJsonDir(self):
-        configfile = os.path.join(
-                os.environ.get('APPDATA') or
-                os.environ.get('XDG_CONFIG_HOME') or
-                os.path.join(os.environ['HOME'], '.config'),
-                'cdda_json_browser'
+        self.configfile = os.path.join(
+            os.environ.get('APPDATA') or
+            os.environ.get('XDG_CONFIG_HOME') or
+            os.path.join(os.environ['HOME'], '.config'),
+            'cdda_json_browser'
         )
+
+        # Can't set it to if because both configfile and directory are checked
         try:
-            with open(configfile, 'r') as configFile:
+            with open(self.configfile, 'r') as configFile:
                 directory = configFile.readline()
 
                 if not os.path.isdir(directory):
                     raise FileNotFoundError
 
         except FileNotFoundError:
-            directory = self.getJsonDir()
-            with open(configfile, 'w') as configFile:
-                configFile.write(directory)
+            return None
 
-        finally:
-            return directory
+        self.setJsonDir(directory)
+        return directory
+
+    def writeJsonDir(self, directory):
+        with open(self.configfile, 'w') as configFile:
+            configFile.write(directory)
+
+    def setJsonDir(self, directory):
+        self.jsonDir = directory
 
     # Run when the program is started for the first time, or whenever the JSON dir is not found
     def getJsonDir(self):
@@ -153,19 +160,20 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
         for t in self.types.keys():
             self.items[t] = []
 
-    def loadJson(self):
+    def loadJson(self, jsonFiles):
         print("Loading items from JSON...")
         self.loadTypes()
         self.createItemsDict()
 
-        for jsonFile in self.jsonFiles:
+        for jsonFile in jsonFiles:
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
                 jsonContent = self.loadJsonFile(openedJsonFile)
                 # Although most files are arrays of objects, some are just
                 # one object. This needs to be handled.
-                if isinstance(jsonContent, dict):
-                    self.handleObjectJson(jsonContent)
-                else:
+                # if isinstance(jsonContent, dict):
+                #     self.handleObjectJson(jsonContent)
+                # else:
+                if isinstance(jsonContent, list):
                     for obj in jsonContent:
                         self.handleObjectJson(obj)
 
@@ -185,10 +193,11 @@ class JsonLoader(): #TODO Make this return the loaded JSON, rather than passing 
             self.types = dict(json.load(typeFile))
 
     def handleObjectJson(self, obj):
-        objType = self.resolveType(obj["type"])
-        if objType:
-            namedObj = self.setObjName(obj)
-            self.items[objType].append(namedObj)
+        if isinstance(obj, dict):
+            objType = self.resolveType(obj.get("type"))
+            if objType:
+                namedObj = self.setObjName(obj)
+                self.items[objType].append(namedObj)
 
     def resolveType(self, jsonType):
         for objectType in self.types:

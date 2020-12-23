@@ -52,7 +52,13 @@
         "integral_weight": "Integral weight",
         "magazine_adaptor": "Magazine adaptor",
         "acceptable_ammo": "Acceptable ammo",
-        "default_mods": "Default modifications"
+        "default_mods": "Default modifications",
+        "fun": "Mood when consumed",
+        "phase": "State",
+        "calories": "Calories",
+        "charges": "Times usable",
+        "spoils_in": "Spoils after",
+        "container": "Contained in"
     },
     "mutation": {
 	    "id":"ID",

@@ -5,8 +5,9 @@ import os
 import textdistance
 
 class JsonSearcher():
-    def __init__(self, rawJson):
+    def __init__(self, rawJson, organizedJson):
         self.rawJson = rawJson
+        self.organizedJson = organizedJson
 
     #TODO Add so user can search for any item with an attribute, without specifying attribute value.
     def searchByAttribute(self, requiredAttributes, jsonType):
@@ -97,6 +98,9 @@ class JsonLoader():
         self.loadJson(jsonFiles)
         return self.items
 
+    def getOrganizedJson(self):
+        return self.itemsByID
+
     # Get the Json directory from file; thanks to @rektrex for this function
     def readJsonDir(self):
         self.configfile = os.path.join(
@@ -156,11 +160,13 @@ class JsonLoader():
 
     def createItemsDict(self):
         self.items = {}
+        self.itemsByID = {}
 
         # We have to pre-populate self.items with empty keys so that
         # handleObjectJson() works correctly
         for t in self.types.keys():
             self.items[t] = []
+            self.itemsByID[t] = {}
 
     def loadJson(self, jsonFiles):
         print("Loading items from JSON...")
@@ -198,7 +204,10 @@ class JsonLoader():
             objType = self.resolveType(obj.get("type"))
             if objType:
                 namedObj = self.setObjName(obj)
+                objID = self.getObjectID(namedObj)
                 self.items[objType].append(namedObj)
+                if objID:
+                    self.itemsByID[objType][objID] = namedObj
 
     # Turns type specified in JSON into type program can read
     def resolveType(self, jsonType):
@@ -206,6 +215,11 @@ class JsonLoader():
             if jsonType in self.types[objectType]:
                 return objectType
         return None
+
+    def getObjectID(self, obj):
+        objID = obj.get("id")
+
+        return objID
 
     # Makes name attribute more search friendly.
     def setObjName(self, obj):
@@ -235,21 +249,22 @@ class JsonTranslator():
 
     def filterJson(self, rawJson, jsonType):
         # These values are removed from JSON
+        # TODO Put this in a separate file
         unwantedValues = {
             "all":  ["type", "//", "//2", "copy-from"], #id is also candidate
             "item": ["color", "use_action", "category", "subcategory",
-                     "id_suffix", "result"],
+                     "id_suffix", "result", "comestible_type"],
             "mutation":  ["valid"],
             "bionic"  :  ["flags", "fake_item", "time"],
             "martial_art":["initiate", "static_buffs", "onmiss_buffs",
                           "onmove_buffs", "ondodge_buffs", "onhit_buffs",
                           "oncrit_buffs", "onblock_buffs"],
             "material":["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
-                          "ident"],
+                        "ident"],
             "vehicle": ["item", "location", "requirements", "size"],
             "monster": ["harvest", "revert_to_itype", "vision_day",
-                          "color", "weight", "default_faction"],
-            "recipe": ["category", "subcategory"]
+                        "color", "weight", "default_faction"],
+            "recipe": ["result", "category", "subcategory"]
         }
 
         resultJson = {}

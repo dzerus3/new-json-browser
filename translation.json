@@ -143,9 +143,8 @@
         "upgrades": "Upgrades"
     },
     "recipe": {
-        "result": "Result",
-        "skill_used": "Skill used",
-        "skills_required": "Used skills",
+        "skill_used": "Primary skill used",
+        "skills_required": "Required skills",
         "time": "Time to craft",
         "difficulty": "Difficulty",
         "reversible": "Reversible",

@@ -35,6 +35,7 @@ class Gui(tk.Tk):
 
     def createScreens(self, directory):
         self.loadedJson = self.jsonLoader.getJson()
+        self.organizedJson = self.jsonLoader.getOrganizedJson()
         self.createMainFrame()
 
     def createSidebar(self):
@@ -136,7 +137,7 @@ class LookupFrame(tk.Frame):
         self.currentLookupType = lookupType
 
     def createJsonSearcher(self, controller):
-        self.searcher = jsonhandler.JsonSearcher(controller.loadedJson)
+        self.searcher = jsonhandler.JsonSearcher(controller.loadedJson, controller.organizedJson)
         self.translator = jsonhandler.JsonTranslator()
 
     def createUI(self):
@@ -326,6 +327,11 @@ class CraftingFrame(LookupFrame):
                     first = False
                 else:
                     outputStr += " or "
-                outputStr += str(optionalComponent[1]) + " of " + optionalComponent[0]
+                componentJson = self.searcher.organizedJson["item"].get(optionalComponent[0])
+                if componentJson:
+                    name = componentJson["name"]
+                    outputStr += str(optionalComponent[1]) + " of " + name
+                else:
+                    outputStr += str(optionalComponent[1]) + " of " + optionalComponent[0]
             output.append(outputStr)
         print(output)

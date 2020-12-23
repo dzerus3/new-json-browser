@@ -152,6 +152,7 @@
         "autolearn": "Learned automatically",
         "qualities": "Tools qualities",
         "tools": "Tools required",
-        "components": "Crafting components"
+        "components": "Crafting components",
+        "book_learn": "Learned from"
     }
 }

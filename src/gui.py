@@ -303,3 +303,29 @@ class CraftingFrame(LookupFrame):
 
     def setLookupType(self, lookupType="recipe"):
         self.currentLookupType = lookupType
+
+    def outputJson(self, rawJson):
+        self.clearResultField()
+        self.prettifyComponents(rawJson)
+        rawJson = self.translator.translate(rawJson, self.currentLookupType)
+        for attribute in rawJson:
+            self.addLine(attribute + ": " + str(rawJson[attribute]))
+
+    def prettifyComponents(self, entry):
+        output = []
+        components = entry.get("components")
+
+        if not components:
+            return
+
+        for component in components:
+            outputStr = ""
+            first = True
+            for optionalComponent in component:
+                if first:
+                    first = False
+                else:
+                    outputStr += " or "
+                outputStr += str(optionalComponent[1]) + " of " + optionalComponent[0]
+            output.append(outputStr)
+        print(output)

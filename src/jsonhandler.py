@@ -45,17 +45,20 @@ class JsonSearcher():
         equal = 0
         for attribute in requiredAttributes:
             similarity = self.getSimilarity(requiredAttributes[attribute], entry[attribute])
+            # If they are exactly the same
             if requiredAttributes[attribute] == entry[attribute]:
                 equal += 1
                 totalSimilarity += 1
             elif similarity > 0.7:
                 totalSimilarity += similarity
+            # If they are completely different
             else:
                 totalSimilarity = 0
                 break
-
+        # if all attributes are exactly equal
         if equal == len(requiredAttributes):
             return 100
+        # if they are somewhat similar
         elif totalSimilarity:
             return totalSimilarity / len(requiredAttributes)
         else:
@@ -117,6 +120,7 @@ class JsonLoader():
         self.setJsonDir(directory)
         return directory
 
+    # Records dir to configfile for future use
     def writeJsonDir(self, directory):
         with open(self.configfile, 'w') as configFile:
             configFile.write(directory)
@@ -169,10 +173,7 @@ class JsonLoader():
             with open(jsonFile, "r", encoding="utf8") as openedJsonFile:
                 jsonContent = self.loadJsonFile(openedJsonFile)
                 # Although most files are arrays of objects, some are just
-                # one object. This needs to be handled.
-                # if isinstance(jsonContent, dict):
-                #     self.handleObjectJson(jsonContent)
-                # else:
+                # one object. This needs to be handled with a type check
                 if isinstance(jsonContent, list):
                     for obj in jsonContent:
                         self.handleObjectJson(obj)
@@ -193,19 +194,22 @@ class JsonLoader():
             self.types = dict(json.load(typeFile))
 
     def handleObjectJson(self, obj):
+        # sometimes the function receives a list for some reason, so this
+        # check prevents crash
         if isinstance(obj, dict):
             objType = self.resolveType(obj.get("type"))
             if objType:
                 namedObj = self.setObjName(obj)
                 self.items[objType].append(namedObj)
 
+    # Turns type specified in JSON into type program can read
     def resolveType(self, jsonType):
         for objectType in self.types:
             if jsonType in self.types[objectType]:
                 return objectType
         return None
 
-    # Makes name more search friendly.
+    # Makes name attribute more search friendly.
     def setObjName(self, obj):
         name = obj.get("name")
         # Checks whether the name is a legacy name
@@ -232,6 +236,7 @@ class JsonTranslator():
         #TODO add special case for martial arts bonuses.
 
     def filterJson(self, rawJson, jsonType):
+        # These values are removed from JSON
         unwantedValues = {
             "all":  ["type", "//", "//2", "copy-from"], #id is also candidate
             "item": ["color", "use_action", "category", "subcategory",

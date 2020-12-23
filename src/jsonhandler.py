@@ -149,8 +149,6 @@ class JsonLoader():
         jsonFiles = []
         wildcard = self.jsonDir + "/**/*.json"
 
-        # TODO: Change this to glob entire game directory
-        # This way it will automatically read mods too
         for jsonFile in glob.iglob(wildcard, recursive=True):
             jsonFiles.append(jsonFile)
 
@@ -182,8 +180,8 @@ class JsonLoader():
         try: #TODO Replace with if?
             jsonContent = json.load(openedJsonFile)
         except json.decoder.JSONDecodeError:
-            print("Failed to read game's JSON. Did you modify it?")
-            exit(1)
+            print("Failed to read JSON file. Skipping it.")
+            return None
 
         return jsonContent
 

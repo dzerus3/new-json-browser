@@ -313,9 +313,46 @@ class CraftingFrame(LookupFrame):
         self.unpackUsing(rawJson)
         self.prettifyComponents(rawJson)
         self.prettifyBooks(rawJson)
+        self.prettifyTools(rawJson)
+        self.prettifyQualities(rawJson)
         rawJson = self.translator.translate(rawJson, self.currentLookupType)
         for attribute in rawJson:
             self.addLine(attribute + ": " + str(rawJson[attribute]))
+
+    def prettifyTools(self, entry):
+        output = []
+        tools = entry.get("tools")
+
+        if not tools:
+            return
+
+        for tool in tools:
+            outputStr = ""
+            first = True
+            for optionalTool in tool:
+                # First does not need to have "or" in output
+                if first:
+                    first = False
+                else:
+                    outputStr += " or "
+                name = self.getNameFromID(optionalTool[0], "item")
+                outputStr += name + f" ({optionalTool[1]} charges)"
+            output.append(outputStr)
+        entry["tools"] = "\n".join(output)
+
+    def prettifyQualities(self, entry):
+        output = []
+        qualities = entry.get("qualities")
+
+        if not qualities:
+            return
+
+        for quality in qualities:
+            qualityID = quality["id"]
+            qualityLevel = quality["level"]
+            name = self.getNameFromID(qualityID, "tool_quality")
+            output.append(f"1 tool with {name} quality of {qualityLevel}")
+        entry["qualities"] = "\n".join(output)
 
     def prettifyComponents(self, entry):
         output = []
@@ -333,7 +370,7 @@ class CraftingFrame(LookupFrame):
                     first = False
                 else:
                     outputStr += " or "
-                name = self.getNameFromID(optionalComponent[0])
+                name = self.getNameFromID(optionalComponent[0], "item")
                 outputStr += str(optionalComponent[1]) + " of " + name
             output.append(outputStr)
         entry["components"] = "\n".join(output)
@@ -346,7 +383,7 @@ class CraftingFrame(LookupFrame):
             return
 
         for book in books:
-            outputStr = f"{self.getNameFromID(book[0])} (level {self.getNameFromID(book[1])})"
+            outputStr = f"{self.getNameFromID(book[0], 'item')} (level {self.getNameFromID(book[1], 'item')})"
             output.append(outputStr)
         entry["book_learn"] = "\n".join(output)
 
@@ -412,8 +449,8 @@ class CraftingFrame(LookupFrame):
         else:
             entry[attribute] = content
 
-    def getNameFromID(self, entryID):
-        componentJson = self.getEntryByID(entryID, "item")
+    def getNameFromID(self, entryID, entryType):
+        componentJson = self.getEntryByID(entryID, entryType)
         if componentJson:
             return componentJson["name"]
         else:

@@ -18,5 +18,6 @@
     "martial_art": ["martial_art"],
     "vehicle": ["vehicle_part"],
     "monster": ["MONSTER"],
-    "recipe": ["recipe"]
+    "recipe": ["recipe"],
+    "requirement": ["requirement"]
 }

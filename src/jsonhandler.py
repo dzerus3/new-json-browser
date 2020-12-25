@@ -264,7 +264,7 @@ class JsonTranslator():
             "vehicle": ["item", "location", "requirements", "size"],
             "monster": ["harvest", "revert_to_itype", "vision_day",
                         "color", "weight", "default_faction"],
-            "recipe": ["result", "category", "subcategory"]
+            "recipe": ["result", "category", "subcategory", "using"]
         }
 
         resultJson = {}

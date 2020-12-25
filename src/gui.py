@@ -207,6 +207,9 @@ class LookupFrame(tk.Frame):
         elif isinstance(result, list):
             self.outputList(result)
 
+    def getEntryByID(self, entryID, entryType):
+        return self.searcher.organizedJson[entryType].get(entryID)
+
     def getWelcomeMessage(self):
         pass
 
@@ -307,7 +310,9 @@ class CraftingFrame(LookupFrame):
 
     def outputJson(self, rawJson):
         self.clearResultField()
+        self.unpackUsing(rawJson)
         self.prettifyComponents(rawJson)
+        self.prettifyBooks(rawJson)
         rawJson = self.translator.translate(rawJson, self.currentLookupType)
         for attribute in rawJson:
             self.addLine(attribute + ": " + str(rawJson[attribute]))
@@ -323,15 +328,94 @@ class CraftingFrame(LookupFrame):
             outputStr = ""
             first = True
             for optionalComponent in component:
+                # First does not need to have "or" in output
                 if first:
                     first = False
                 else:
                     outputStr += " or "
-                componentJson = self.searcher.organizedJson["item"].get(optionalComponent[0])
-                if componentJson:
-                    name = componentJson["name"]
-                    outputStr += str(optionalComponent[1]) + " of " + name
-                else:
-                    outputStr += str(optionalComponent[1]) + " of " + optionalComponent[0]
+                name = self.getNameFromID(optionalComponent[0])
+                outputStr += str(optionalComponent[1]) + " of " + name
             output.append(outputStr)
-        print(output)
+        entry["components"] = "\n".join(output)
+
+    def prettifyBooks(self, entry):
+        output = []
+        books = entry.get("book_learn")
+
+        if not books:
+            return
+
+        for book in books:
+            outputStr = f"{self.getNameFromID(book[0])} (level {self.getNameFromID(book[1])})"
+            output.append(outputStr)
+        entry["book_learn"] = "\n".join(output)
+
+    def unpackUsing(self, entry):
+        output = []
+        using = entry.get("using")
+
+        if not using:
+            return
+
+        for preset in using:
+            presetID = preset[0]
+            presetQuantity = preset[1]
+            presetJson = self.getEntryByID(presetID, "requirement")
+            if not presetJson:
+                return
+            tools = presetJson.get("tools")
+            components = presetJson.get("components")
+            qualities = presetJson.get("qualities")
+
+            #TODO: Refactor
+
+        if tools:
+            self.addToJson(entry, "tools", tools)
+
+        if components:
+            for component in components:
+                for optionalComponent in component:
+                    optionalComponent[1] *= presetQuantity
+            self.addToJson(entry, "components", self.handleRequirementComponent(components))
+
+        if qualities:
+            self.addToJson(entry, "qualities", qualities)
+        return output
+
+    # These are sometimes nested and have to be handled specially.
+    def handleRequirementComponent(self, components):
+        output = []
+
+        for optionalComponents in components:
+            optOutput = []
+            for optionalComponent in optionalComponents:
+                # Nested components appear to have an extra element
+                # to indicate they are nested
+                if len(optionalComponent) > 2:
+                    componentJson = self.getEntryByID(optionalComponent[0], "requirement")
+
+                    buff = self.handleRequirementComponent(componentJson["components"])
+                    quantity = optionalComponent[1]
+                    for comp in buff:
+                        for optComp in comp:
+                            # Multiplies everything by quantity in preset
+                            optComp[1] *= quantity
+                            optOutput.append(optComp)
+                else:
+                    optOutput.append(optionalComponent)
+            output.append(optOutput)
+        return output
+
+    def addToJson(self, entry, attribute, content):
+        if entry.get(attribute):
+            entry[attribute] += content
+        else:
+            entry[attribute] = content
+
+    def getNameFromID(self, entryID):
+        componentJson = self.getEntryByID(entryID, "item")
+        if componentJson:
+            return componentJson["name"]
+        else:
+            # Output id if name is not found for some reason
+            return entryID

@@ -218,6 +218,9 @@ class JsonLoader():
 
     def getObjectID(self, obj):
         objID = obj.get("id")
+        # For some reason, skills use the ident attribute
+        if not objID:
+            objID = obj.get("ident")
 
         return objID
 
@@ -263,8 +266,9 @@ class JsonTranslator():
                         "ident"],
             "vehicle": ["item", "location", "requirements", "size"],
             "monster": ["harvest", "revert_to_itype", "vision_day",
-                        "color", "weight", "default_faction"],
-            "recipe": ["result", "category", "subcategory", "using"]
+                        "color", "weight", "default_faction", "volume"],
+            "recipe": ["result", "category", "subcategory", "using",
+                       "difficulty"]
         }
 
         resultJson = {}

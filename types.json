@@ -21,5 +21,6 @@
     "recipe": ["recipe"],
     "requirement": ["requirement"],
     "tool_quality": ["tool_quality"],
-    "body_part": ["body_part"]
+    "body_part": ["body_part"],
+    "skill": ["skill"]
 }

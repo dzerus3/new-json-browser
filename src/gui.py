@@ -315,6 +315,8 @@ class CraftingFrame(LookupFrame):
         self.prettifyBooks(rawJson)
         self.prettifyTools(rawJson)
         self.prettifyQualities(rawJson)
+        self.prettifySkillsRequired(rawJson)
+        self.prettifySkillUsed(rawJson)
         rawJson = self.translator.translate(rawJson, self.currentLookupType)
         for attribute in rawJson:
             self.addLine(attribute + ": " + str(rawJson[attribute]))
@@ -383,9 +385,29 @@ class CraftingFrame(LookupFrame):
             return
 
         for book in books:
-            outputStr = f"{self.getNameFromID(book[0], 'item')} (level {self.getNameFromID(book[1], 'item')})"
+            outputStr = f"{self.getNameFromID(book[0], 'item')} (level {book[1]})"
             output.append(outputStr)
         entry["book_learn"] = "\n".join(output)
+
+    def prettifySkillUsed(self, entry):
+        skill = entry.get("skill_used")
+
+        if not skill:
+            return
+
+        entry["skill_used"] = f"{self.getNameFromID(skill, 'skill')} (level {entry.get('difficulty')})"
+
+    def prettifySkillsRequired(self, entry):
+        output = []
+        skills = entry.get("skills_required")
+
+        if not skills:
+            return
+
+        for skill in skills:
+            outputStr = f"{self.getNameFromID(skill[0], 'skill')} (level {skill[1]})"
+            output.append(outputStr)
+        entry["skills_required"] = "\n".join(output)
 
     def unpackUsing(self, entry):
         output = []

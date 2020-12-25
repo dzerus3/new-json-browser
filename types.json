@@ -19,5 +19,7 @@
     "vehicle": ["vehicle_part"],
     "monster": ["MONSTER"],
     "recipe": ["recipe"],
-    "requirement": ["requirement"]
+    "requirement": ["requirement"],
+    "tool_quality": ["tool_quality"],
+    "body_part": ["body_part"]
 }

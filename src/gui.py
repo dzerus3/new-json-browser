@@ -44,7 +44,7 @@ class Gui(tk.Tk):
 
     def createMainFrame(self):
         self.frames = {}
-        for Frame in (MainFrame, ItemFrame, CraftingFrame):
+        for Frame in (MainFrame, ItemFrame, MutationFrame, BionicFrame, MartialArtFrame, MonsterFrame, CraftingFrame, VehicleFrame):
             frameName = Frame.__name__
             frameInstance = Frame(parent=self.container, controller=self)
             self.frames[frameName] = frameInstance
@@ -77,6 +77,46 @@ class Sidebar(tk.Frame):
             command = lambda: self.controller.showFrame("ItemFrame")
         )
         itemButton.pack(side="top")
+
+        mutationButton = tk.Button(
+            self,
+            text="☣ Mutations",
+            width = bWidth,
+            command = lambda: self.controller.showFrame("MutationFrame")
+        )
+        mutationButton.pack(side="top")
+
+        bionicButton = tk.Button(
+            self,
+            text="⚙ Bionics",
+            width = bWidth,
+            command = lambda: self.controller.showFrame("BionicFrame")
+        )
+        bionicButton.pack(side="top")
+
+        monsterButton = tk.Button(
+            self,
+            text="⚰ Monsters",
+            width = bWidth,
+            command = lambda: self.controller.showFrame("MonsterFrame")
+        )
+        monsterButton.pack(side="top")
+
+        martialButton = tk.Button(
+            self,
+            text="⚔ Martial Arts",
+            width = bWidth,
+            command = lambda: self.controller.showFrame("MartialArtFrame")
+        )
+        martialButton.pack(side="top")
+
+        vehicleButton = tk.Button(
+            self,
+            text="⛍ Vehicles",
+            width = bWidth,
+            command = lambda: self.controller.showFrame("VehicleFrame")
+        )
+        vehicleButton.pack(side="top")
 
         craftingButton = tk.Button(
             self,
@@ -220,73 +260,40 @@ class ItemFrame(LookupFrame):
     def getWelcomeMessage(self):
         return "Welcome to the item screen"
 
-    def createUI(self):
-        self.label = tk.Label(self, text=self.getWelcomeMessage())
-        self.label.pack(side="top")
+class MutationFrame(LookupFrame):
+    def getWelcomeMessage(self):
+        return "Welcome to the mutation screen"
 
-        self.searchField = tk.Entry(self)
-        self.searchField.pack()
+    def setLookupType(self, lookupType="mutation"):
+        self.currentLookupType = lookupType
 
-        # Where the result will pop up
-        self.resultField = tk.Text(self, height=20, width=50)
-        self.resultField.configure(state="disabled")
-        self.resultField.pack()
+class BionicFrame(LookupFrame):
+    def getWelcomeMessage(self):
+        return "Welcome to the bionic screen"
 
-        searchButton = tk.Button(self, text="Search", command=self.searchItem)
-        searchButton.pack()
-        self.createButtons()
+    def setLookupType(self, lookupType="bionic"):
+        self.currentLookupType = lookupType
 
-    def createButtons(self):
-        # Default width for all buttons
-        bWidth = 10
+class MartialArtFrame(LookupFrame):
+    def getWelcomeMessage(self):
+        return "Welcome to the martial art screen"
 
-        monsterButton = tk.Button(
-            self,
-            text="⚰ Monsters",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("monster")
-        )
-        monsterButton.pack(side="bottom")
+    def setLookupType(self, lookupType="martial_art"):
+        self.currentLookupType = lookupType
 
-        vehicleButton = tk.Button(
-            self,
-            text="⛍ Vehicles",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("vehicle")
-        )
-        vehicleButton.pack(side="bottom")
+class VehicleFrame(LookupFrame):
+    def getWelcomeMessage(self):
+        return "Welcome to the vehicle part screen"
 
-        martialButton = tk.Button(
-            self,
-            text="⚔ Martial Arts",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("martial_art")
-        )
-        martialButton.pack(side="bottom")
+    def setLookupType(self, lookupType="vehicle"):
+        self.currentLookupType = lookupType
 
-        bionicButton = tk.Button(
-            self,
-            text="⚙ Bionics",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("bionic")
-        )
-        bionicButton.pack(side="bottom")
+class MonsterFrame(LookupFrame):
+    def getWelcomeMessage(self):
+        return "Welcome to the monster screen"
 
-        mutationButton = tk.Button(
-            self,
-            text="☣ Mutations",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("mutation")
-        )
-        mutationButton.pack(side="bottom")
-
-        itemButton = tk.Button(
-            self,
-            text="⚒ Items",
-            width = bWidth,
-            command = lambda: self.changeCurrentLookup("item")
-        )
-        itemButton.pack(side="bottom")
+    def setLookupType(self, lookupType="monster"):
+        self.currentLookupType = lookupType
 
 class CraftingFrame(LookupFrame):
     def searchItem(self):

@@ -241,8 +241,8 @@ class JsonLoader():
 
 class JsonTranslator():
     def __init__(self):
-        translationFile = open("translation.json", "r")
-        self.translations = json.load(translationFile)
+        with open("translation.json", "r") as translationFile:
+            self.translations = json.load(translationFile)
 
     def translate(self, rawJson, jsonType):
         rawJson = self.filterJson(rawJson, jsonType)

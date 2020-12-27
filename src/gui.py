@@ -310,84 +310,71 @@ class CraftingFrame(LookupFrame):
 
     def outputJson(self, rawJson):
         self.clearResultField()
-        self.unpackUsing(rawJson)
-        self.prettifyComponents(rawJson)
-        self.prettifyBooks(rawJson)
-        self.prettifyTools(rawJson)
-        self.prettifyQualities(rawJson)
-        self.prettifySkillsRequired(rawJson)
-        self.prettifySkillUsed(rawJson)
+        self.prettifyRecipe(rawJson)
         rawJson = self.translator.translate(rawJson, self.currentLookupType)
         for attribute in rawJson:
             self.addLine(attribute + ": " + str(rawJson[attribute]))
 
-    def prettifyTools(self, entry):
-        output = []
-        tools = entry.get("tools")
+    def prettifyRecipe(self, rawJson):
+        prettifiers = {
+            "book_learn": self.prettifyBooks,
+            "components": self.prettifyComponents,
+            "skills_required": self.prettifySkillsRequired,
+            "tools": self.prettifyTools,
+            "qualities": self.prettifyQualities
+        }
+        self.unpackUsing(rawJson)
+        for prettifier in prettifiers:
+            self.prettify(rawJson, prettifier, prettifiers[prettifier])
+        self.prettifySkillUsed(rawJson)
 
-        if not tools:
+    def prettify(self, entry,attributeName, prettifier):
+        output = []
+        attributes = entry.get(attributeName)
+
+        if not attributes:
             return
 
-        for tool in tools:
-            outputStr = ""
-            first = True
-            for optionalTool in tool:
-                # First does not need to have "or" in output
-                if first:
-                    first = False
-                else:
-                    outputStr += " or "
-                name = self.getNameFromID(optionalTool[0], "item")
-                outputStr += name + f" ({optionalTool[1]} charges)"
-            output.append(outputStr)
-        entry["tools"] = "\n".join(output)
+        for attribute in attributes:
+            prettifier(attribute, output)
 
-    def prettifyQualities(self, entry):
-        output = []
-        qualities = entry.get("qualities")
+        entry[attributeName] = "\n".join(output)
 
-        if not qualities:
-            return
+    def prettifyTools(self, tool, output):
+        outputStr = ""
+        first = True
+        for optionalTool in tool:
+            # First does not need to have "or" in output
+            if first:
+                first = False
+            else:
+                outputStr += " or "
+            name = self.getNameFromID(optionalTool[0], "item")
+            outputStr += name + f" ({optionalTool[1]} charges)"
+        output.append(outputStr)
 
-        for quality in qualities:
-            qualityID = quality["id"]
-            qualityLevel = quality["level"]
-            name = self.getNameFromID(qualityID, "tool_quality")
-            output.append(f"1 tool with {name} quality of {qualityLevel}")
-        entry["qualities"] = "\n".join(output)
+    def prettifyQualities(self, quality, output):
+        qualityID = quality["id"]
+        qualityLevel = quality["level"]
+        name = self.getNameFromID(qualityID, "tool_quality")
+        output.append(f"1 tool with {name} quality of {qualityLevel}")
 
-    def prettifyComponents(self, entry):
-        output = []
-        components = entry.get("components")
+    def prettifyComponents(self, component, output):
+        outputStr = ""
+        first = True
+        for optionalComponent in component:
+            # First does not need to have "or" in output
+            if first:
+                first = False
+            else:
+                outputStr += " or "
+            name = self.getNameFromID(optionalComponent[0], "item")
+            outputStr += str(optionalComponent[1]) + " of " + name
+        output.append(outputStr)
 
-        if not components:
-            return
-
-        for component in components:
-            outputStr = ""
-            first = True
-            for optionalComponent in component:
-                # First does not need to have "or" in output
-                if first:
-                    first = False
-                else:
-                    outputStr += " or "
-                name = self.getNameFromID(optionalComponent[0], "item")
-                outputStr += str(optionalComponent[1]) + " of " + name
-            output.append(outputStr)
-        entry["components"] = "\n".join(output)
-
-    def prettifyBooks(self, entry):
-        output = []
-        books = entry.get("book_learn")
-
-        if not books:
-            return
-
-        for book in books:
-            outputStr = f"{self.getNameFromID(book[0], 'item')} (level {book[1]})"
-            output.append(outputStr)
-        entry["book_learn"] = "\n".join(output)
+    def prettifyBooks(self, book, output):
+        outputStr = f"{self.getNameFromID(book[0], 'item')} (level {book[1]})"
+        output.append(outputStr)
 
     def prettifySkillUsed(self, entry):
         skill = entry.get("skill_used")
@@ -397,17 +384,9 @@ class CraftingFrame(LookupFrame):
 
         entry["skill_used"] = f"{self.getNameFromID(skill, 'skill')} (level {entry.get('difficulty')})"
 
-    def prettifySkillsRequired(self, entry):
-        output = []
-        skills = entry.get("skills_required")
-
-        if not skills:
-            return
-
-        for skill in skills:
-            outputStr = f"{self.getNameFromID(skill[0], 'skill')} (level {skill[1]})"
-            output.append(outputStr)
-        entry["skills_required"] = "\n".join(output)
+    def prettifySkillsRequired(self, skill, output):
+        outputStr = f"{self.getNameFromID(skill[0], 'skill')} (level {skill[1]})"
+        output.append(outputStr)
 
     def unpackUsing(self, entry):
         output = []

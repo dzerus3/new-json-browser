@@ -252,24 +252,8 @@ class JsonTranslator():
 
     def filterJson(self, rawJson, jsonType):
         # These values are removed from JSON
-        # TODO Put this in a separate file
-        unwantedValues = {
-            "all":  ["type", "//", "//2", "copy-from"], #id is also candidate
-            "item": ["color", "use_action", "category", "subcategory",
-                     "id_suffix", "result", "comestible_type"],
-            "mutation":  ["valid"],
-            "bionic"  :  ["flags", "fake_item", "time"],
-            "martial_art":["initiate", "static_buffs", "onmiss_buffs",
-                          "onmove_buffs", "ondodge_buffs", "onhit_buffs",
-                          "oncrit_buffs", "onblock_buffs"],
-            "material":["dmg_adj", "bash_dmg_verb", "cut_dmg_verb",
-                        "ident"],
-            "vehicle": ["item", "location", "requirements", "size"],
-            "monster": ["harvest", "revert_to_itype", "vision_day",
-                        "color", "weight", "default_faction", "volume"],
-            "recipe": ["result", "category", "subcategory", "using",
-                       "difficulty"]
-        }
+        with open("unwanted.json", "r") as unwantedsFile:
+            unwantedValues = dict(json.load(unwantedsFile))
 
         resultJson = {}
 

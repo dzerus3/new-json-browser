@@ -247,6 +247,18 @@ class LookupFrame(tk.Frame):
         elif isinstance(result, list):
             self.outputList(result)
 
+    def prettify(self, entry,attributeName, prettifier):
+        output = []
+        attributes = entry.get(attributeName)
+
+        if not attributes:
+            return
+
+        for attribute in attributes:
+            prettifier(attribute, output)
+
+        entry[attributeName] = "\n".join(output)
+
     def getEntryByID(self, entryID, entryType):
         return self.searcher.organizedJson[entryType].get(entryID)
 
@@ -334,18 +346,6 @@ class CraftingFrame(LookupFrame):
         for prettifier in prettifiers:
             self.prettify(rawJson, prettifier, prettifiers[prettifier])
         self.prettifySkillUsed(rawJson)
-
-    def prettify(self, entry,attributeName, prettifier):
-        output = []
-        attributes = entry.get(attributeName)
-
-        if not attributes:
-            return
-
-        for attribute in attributes:
-            prettifier(attribute, output)
-
-        entry[attributeName] = "\n".join(output)
 
     def prettifyTools(self, tool, output):
         outputStr = ""

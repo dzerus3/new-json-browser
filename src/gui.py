@@ -221,9 +221,11 @@ class LookupFrame(tk.Frame):
     # Used to output JSON objects
     def outputJson(self, rawJson):
         self.clearResultField()
-        rawJson = self.translator.translate(rawJson, self.currentLookupType)
-        for attribute in rawJson:
-            self.addLine(attribute + ": " + str(rawJson[attribute]))
+        bufferJson = dict(rawJson)
+        self.prettifyEntry(bufferJson)
+        bufferJson = self.translator.translate(bufferJson, self.currentLookupType)
+        for attribute in bufferJson:
+            self.addLine(attribute + ": " + str(bufferJson[attribute]))
 
     def searchItem(self):
         # Retrieves content of entry field
@@ -247,7 +249,7 @@ class LookupFrame(tk.Frame):
         elif isinstance(result, list):
             self.outputList(result)
 
-    def prettify(self, entry,attributeName, prettifier):
+    def prettify(self, entry, attributeName, prettifier):
         output = []
         attributes = entry.get(attributeName)
 
@@ -268,6 +270,9 @@ class LookupFrame(tk.Frame):
     def assignHotkeys(self):
         pass
 
+    def prettifyEntry(self, _):
+        pass
+
 class ItemFrame(LookupFrame):
     def getWelcomeMessage(self):
         return "Welcome to the item screen"
@@ -278,6 +283,36 @@ class MutationFrame(LookupFrame):
 
     def setLookupType(self, lookupType="mutation"):
         self.currentLookupType = lookupType
+
+    def prettifyEntry(self, rawJson):
+        prettifiers = {
+            "category": self.prettifyMutationPath,
+            "prereqs": self.prettifyPrereqs,
+            "cancels": self.prettifyCancels,
+            "changes_to": self.prettifyChanges
+        }
+        for prettifier in prettifiers:
+            self.prettify(rawJson, prettifier, prettifiers[prettifier])
+
+    def prettifyMutationPath(self, mutationPath, output):
+        pathJson = self.getEntryByID(mutationPath, "mutation_category")
+        name = pathJson["name"]
+        output.append(name)
+
+    def prettifyPrereqs(self, mutation, output):
+        mutationJson = self.getEntryByID(mutation, "mutation")
+        name = mutationJson["name"]
+        output.append(name)
+
+    def prettifyCancels(self, mutation, output):
+        mutationJson = self.getEntryByID(mutation, "mutation")
+        name = mutationJson["name"]
+        output.append(name)
+
+    def prettifyChanges(self, mutation, output):
+        mutationJson = self.getEntryByID(mutation, "mutation")
+        name = mutationJson["name"]
+        output.append(name)
 
 class BionicFrame(LookupFrame):
     def getWelcomeMessage(self):
@@ -327,14 +362,7 @@ class CraftingFrame(LookupFrame):
     def setLookupType(self, lookupType="recipe"):
         self.currentLookupType = lookupType
 
-    def outputJson(self, rawJson):
-        self.clearResultField()
-        self.prettifyRecipe(rawJson)
-        rawJson = self.translator.translate(rawJson, self.currentLookupType)
-        for attribute in rawJson:
-            self.addLine(attribute + ": " + str(rawJson[attribute]))
-
-    def prettifyRecipe(self, rawJson):
+    def prettifyEntry(self, rawJson):
         prettifiers = {
             "book_learn": self.prettifyBooks,
             "components": self.prettifyComponents,

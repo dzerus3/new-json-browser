@@ -221,6 +221,7 @@ class LookupFrame(tk.Frame):
     # Used to output JSON objects
     def outputJson(self, rawJson):
         self.clearResultField()
+        # Makes a deep reference of rawJson so item does not get overwritten
         bufferJson = dict(rawJson)
         self.prettifyEntry(bufferJson)
         bufferJson = self.translator.translate(bufferJson, self.currentLookupType)
@@ -287,9 +288,13 @@ class MutationFrame(LookupFrame):
     def prettifyEntry(self, rawJson):
         prettifiers = {
             "category": self.prettifyMutationPath,
-            "prereqs": self.prettifyPrereqs,
-            "cancels": self.prettifyCancels,
-            "changes_to": self.prettifyChanges
+            "prereqs": self.prettifyMutationList,
+            "cancels": self.prettifyMutationList,
+            "leads_to": self.prettifyMutationList,
+            "threshreq": self.prettifyMutationList,
+            "changes_to": self.prettifyMutationList,
+            "wet_protection": self.prettifyBodyPartList,
+            "initial_ma_styles": self.prettifyMartialArtsList
         }
         for prettifier in prettifiers:
             self.prettify(rawJson, prettifier, prettifiers[prettifier])
@@ -299,19 +304,19 @@ class MutationFrame(LookupFrame):
         name = pathJson["name"]
         output.append(name)
 
-    def prettifyPrereqs(self, mutation, output):
+    def prettifyMutationList(self, mutation, output):
         mutationJson = self.getEntryByID(mutation, "mutation")
         name = mutationJson["name"]
         output.append(name)
 
-    def prettifyCancels(self, mutation, output):
-        mutationJson = self.getEntryByID(mutation, "mutation")
-        name = mutationJson["name"]
-        output.append(name)
+    def prettifyBodyPartList(self, part, output):
+        partJson = self.getEntryByID(part["part"], "body_part")
+        name = partJson["name"]
+        output.append(part["ignored"] + " on " + name)
 
-    def prettifyChanges(self, mutation, output):
-        mutationJson = self.getEntryByID(mutation, "mutation")
-        name = mutationJson["name"]
+    def prettifyMartialArtsList(self, art, output):
+        artJson = self.getEntryByID(art, "martial_art")
+        name = artJson["name"]
         output.append(name)
 
 class BionicFrame(LookupFrame):

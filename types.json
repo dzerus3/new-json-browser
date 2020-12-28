@@ -22,5 +22,6 @@
     "requirement": ["requirement"],
     "tool_quality": ["tool_quality"],
     "body_part": ["body_part"],
-    "skill": ["skill"]
+    "skill": ["skill"],
+    "mutation_category": ["mutation_category"]
 }

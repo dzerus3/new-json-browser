@@ -97,7 +97,10 @@
         "category": "Mutation path",
         "vitamins_absorb_multi": "Nutrition absorption factor",
         "description": "Description",
-        "prereqs": "Mutation prerequisites"
+        "prereqs": "Mutation prerequisites",
+        "leads_to": "Leads to",
+        "threshreq": "Required threshhold",
+        "passive_mods": "Passive changes"
     },
     "bionic": {
     	"id": "ID",

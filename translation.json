@@ -65,9 +65,9 @@
 	    "name":"Mutation name",
         "movecost_flatground_modifier":"Speed modifier on flat ground",
         "hearing_modifier": "Hearing strength",
-        "starting_trait": "Chooseable on character selection",
-        "changes_to":"Mutates into",
-        "points": "Point cost on character selection",
+        "starting_trait": "Available on character selection",
+        "changes_to": "Mutates into",
+        "points": "Point cost",
         "wet_protection": "Wetness protection",
         "movecost_obstacle_modifier": "Speed modifier on rough terrain",
         "cancels": "Cancels mutation",
@@ -76,7 +76,7 @@
         "healing_resting": "Healing speed while resting",
         "mending_modifier": "Healing speed for treated wounds",
         "metabolism_modifier": "Metabolism speed",
-        "active": "Activatable",
+        "active": "Is activatable",
         "starts_active": "Active by default",
         "reading_speed_multiplier": "Reading speed multiplier",
         "hp_modifier": "Health modifier",
@@ -95,8 +95,9 @@
         "ugliness": "Ugliness",
         "fatigue_regen_modifier": "Fatigue regeneration speed",
         "category": "Mutation path",
-        "vitamins_absorb_multi": "Nutrition absorption factors",
-        "description": "Description"
+        "vitamins_absorb_multi": "Nutrition absorption factor",
+        "description": "Description",
+        "prereqs": "Mutation prerequisites"
     },
     "bionic": {
     	"id": "ID",

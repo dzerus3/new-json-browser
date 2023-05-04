@@ -1,5 +1,5 @@
 # new-json-browser
-## The project is still a WIP
+## The project is ~~still~~ permanently a WIP. I have no interest in finishing it at this point, but it's kind of cool. 
 
 A browser for common JSON info
 
